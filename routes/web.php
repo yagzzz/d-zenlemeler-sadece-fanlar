@@ -5,6 +5,7 @@ use App\Http\Controllers\CreatorApplicationController;
 use App\Http\Controllers\CreatorContentController;
 use App\Http\Controllers\CreatorContentsController;
 use App\Http\Controllers\FeedController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\Admin\CreatorApplicationController as AdminCreatorApplicationController;
 
 Route::get('/', function () {
@@ -37,4 +38,9 @@ Route::prefix('creator')
 Route::middleware(['feature:feed'])->group(function () {
     Route::get('/feed', [FeedController::class, 'index']);
     Route::get('/creators/{user}/contents', [CreatorContentsController::class, 'index']);
+});
+
+Route::middleware(['auth', 'feature:payments_core'])->group(function () {
+    Route::post('/payments/subscription/invoice', [PaymentController::class, 'createSubscriptionInvoice']);
+    Route::post('/payments/verify', [PaymentController::class, 'verify']);
 });
