@@ -91,38 +91,47 @@ class MediaService
      */
     public function getSignedViewUrl(?User $user, MediaAsset $asset): array
     {
-        $contents = $asset->contents()->get();
-
-        if ($contents->isEmpty()) {
-            if ($user === null || $user->id !== $asset->creator_id) {
-                throw new AuthorizationException('media_unattached');
-            }
-        } else {
-            $granted = false;
-            $reason = null;
-
-            foreach ($contents as $content) {
-                $decision = $this->accessEngine->decide(
-                    new AccessRequest($user, $content->visibility, $content->creator_id, $content->id)
-                );
-
-                if ($decision->granted) {
-                    $granted = true;
-                    break;
-                }
-
-                $reason = $decision->reason;
-            }
-
-            if (! $granted) {
-                throw new AuthorizationException($reason ?? 'access_denied');
-            }
-        }
+        $this->authorizeView($user, $asset);
 
         return $this->storage->createViewUrl(
             $asset->object_key,
             (int) config('media.view_expires_seconds', 600)
         );
+    }
+
+    public function authorizeView(?User $user, MediaAsset $asset): void
+    {
+        $content = $this->resolvePrimaryContent($asset);
+
+        if (! $content) {
+            if ($user === null || $user->id !== $asset->creator_id) {
+                throw new AuthorizationException('media_unattached');
+            }
+
+            return;
+        }
+
+        $decision = $this->accessEngine->decide(
+            new AccessRequest(
+                $user,
+                $content->visibility,
+                $content->creator_id,
+                $content->id,
+                $content->required_tier_id,
+                $content->ppv_price_atomic
+            )
+        );
+
+        if (! $decision->granted) {
+            throw new AuthorizationException($decision->reason ?? 'access_denied');
+        }
+    }
+
+    public function resolvePrimaryContent(MediaAsset $asset): ?Content
+    {
+        return $asset->contents()
+            ->orderBy('content_media.position')
+            ->first();
     }
 
     private function authorizeCreator(User $creator): void

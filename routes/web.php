@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\CreatorApplicationController as AdminCreatorApplicationController;
+use App\Http\Controllers\ContentController;
 use App\Http\Controllers\CreatorApplicationController;
 use App\Http\Controllers\CreatorContentController;
 use App\Http\Controllers\CreatorContentsController;
@@ -86,7 +87,8 @@ Route::middleware(['auth', 'feature:ppv_core'])->group(function () {
 });
 
 Route::middleware(['feature:media_core'])->group(function () {
-    Route::get('/media/{mediaAsset}/url', [MediaController::class, 'viewUrl']);
+    Route::get('/media/{mediaAsset}/url', [MediaController::class, 'viewUrl'])
+        ->middleware('content.access');
 });
 
 Route::middleware(['feature:creator_profile'])->group(function () {
@@ -117,4 +119,11 @@ Route::prefix('api')
             ->middleware('auth');
         Route::post('/creators/{username}/subscription/change-tier/invoice', [SubscriptionTierController::class, 'changeTierInvoice'])
             ->middleware('auth');
+    });
+
+Route::prefix('api')
+    ->middleware(['feature:content_show'])
+    ->group(function () {
+        Route::get('/contents/{content}', [ContentController::class, 'show'])
+            ->middleware('content.access');
     });

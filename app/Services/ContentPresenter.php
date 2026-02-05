@@ -13,7 +13,14 @@ class ContentPresenter
 
     public function present(Content $content, ?User $user): array
     {
-        $decision = $this->accessEngine->decide(new AccessRequest($user, $content->visibility, $content->creator_id, $content->id));
+        $decision = $this->accessEngine->decide(new AccessRequest(
+            $user,
+            $content->visibility,
+            $content->creator_id,
+            $content->id,
+            $content->required_tier_id,
+            $content->ppv_price_atomic
+        ));
         $preview = $this->buildPreview($decision->granted, $decision->reason, $decision->tierHint);
         $locked = ! $decision->granted;
         $tipsAggregate = $this->buildTipsAggregate($content);

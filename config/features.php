@@ -5,6 +5,7 @@ return [
         'access_engine' => false,
         'creator_applications' => false,
         'content_core' => false,
+        'content_show' => false,
         'feed' => false,
         'payments_core' => false,
         'payments' => false,

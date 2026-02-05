@@ -10,6 +10,8 @@ class AccessRequest
         public readonly ?User $user,
         public readonly string $visibility,
         public readonly ?int $creatorId = null,
-        public readonly ?int $contentId = null
+        public readonly ?int $contentId = null,
+        public readonly ?string $requiredTierId = null,
+        public readonly ?int $ppvPriceAtomic = null
     ) {}
 }

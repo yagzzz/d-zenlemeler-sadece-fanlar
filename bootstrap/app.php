@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\ContentAccessMiddleware;
 use App\Http\Middleware\EnsureAdmin;
 use App\Http\Middleware\EnsureFeatureEnabled;
 use Illuminate\Foundation\Application;
@@ -15,6 +16,7 @@ $app = Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'admin' => EnsureAdmin::class,
+            'content.access' => ContentAccessMiddleware::class,
             'feature' => EnsureFeatureEnabled::class,
         ]);
     })
