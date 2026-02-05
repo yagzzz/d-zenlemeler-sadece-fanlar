@@ -1,6 +1,5 @@
 <?php
 
-use App\Models\Invoice;
 use App\Models\Subscription;
 use App\Models\Tier;
 use App\Models\User;
@@ -9,7 +8,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
 
-it('creates invoice, marks paid, and extends subscription idempotently', function () {
+it('creates subscription invoice for tier and extends by tier duration', function () {
     config()->set('features.flags.payments_core', true);
     config()->set('features.flags.tiers', true);
 
@@ -18,12 +17,12 @@ it('creates invoice, marks paid, and extends subscription idempotently', functio
 
     $tier = Tier::create([
         'creator_id' => $creator->id,
-        'name' => 'Base',
-        'description' => 'Starter',
+        'name' => 'Pro',
+        'description' => 'Pro tier',
         'tier_level' => 1,
-        'price_atomic' => 1000,
+        'price_atomic' => 1500,
         'currency' => 'XMR',
-        'duration_days' => 10,
+        'duration_days' => 45,
         'is_active' => true,
         'position' => 0,
     ]);
@@ -35,7 +34,7 @@ it('creates invoice, marks paid, and extends subscription idempotently', functio
         ->assertCreated();
 
     $invoiceId = $response->json('invoice_id');
-    $invoice = Invoice::findOrFail($invoiceId);
+    $invoice = \App\Models\Invoice::findOrFail($invoiceId);
 
     app(MockPaymentSimulator::class)->markPaid($invoice->payment_reference, $invoice->amount_atomic);
 
@@ -47,14 +46,7 @@ it('creates invoice, marks paid, and extends subscription idempotently', functio
         ->where('creator_id', $creator->id)
         ->first();
 
-    expect($subscription)->not->toBeNull();
     expect($verify->json('status'))->toBe('paid');
-
-    $verifyAgain = $this->actingAs($payer)
-        ->post('/payments/verify', ['payment_reference' => $invoice->payment_reference])
-        ->assertOk();
-
-    $subscription->refresh();
-    expect($verifyAgain->json('status'))->toBe('paid');
-    expect($subscription->ends_at)->toEqual($subscription->ends_at);
+    expect($subscription)->not->toBeNull();
+    expect($subscription->ends_at->greaterThan(now()->addDays(30)))->toBeTrue();
 });

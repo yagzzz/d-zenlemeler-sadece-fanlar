@@ -2,6 +2,7 @@
 
 use App\Models\Invoice;
 use App\Models\Subscription;
+use App\Models\Tier;
 use App\Models\User;
 use App\Services\Payments\MockPaymentSimulator;
 use App\Services\Payments\PaymentService;
@@ -12,9 +13,22 @@ uses(Tests\TestCase::class, RefreshDatabase::class);
 
 it('extends from existing ends_at when active', function () {
     config()->set('features.flags.payments_core', true);
+    config()->set('features.flags.tiers', true);
 
     $payer = User::factory()->create();
     $creator = User::factory()->creator()->create();
+
+    $tier = Tier::create([
+        'creator_id' => $creator->id,
+        'name' => 'Base',
+        'description' => 'Starter',
+        'tier_level' => 1,
+        'price_atomic' => 1000,
+        'currency' => 'XMR',
+        'duration_days' => 10,
+        'is_active' => true,
+        'position' => 0,
+    ]);
 
     $existing = Subscription::create([
         'user_id' => $payer->id,
@@ -24,7 +38,7 @@ it('extends from existing ends_at when active', function () {
     ]);
 
     $service = app(PaymentService::class);
-    $invoice = $service->createSubscriptionInvoice($payer, $creator, 10, 1000);
+    $invoice = $service->createSubscriptionInvoice($payer, $tier);
 
     app(MockPaymentSimulator::class)->markPaid($invoice->payment_reference, $invoice->amount_atomic);
     $result = $service->verifyInvoiceAndApply($invoice->payment_reference);
