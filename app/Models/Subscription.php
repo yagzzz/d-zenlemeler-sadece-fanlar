@@ -14,6 +14,8 @@ class Subscription extends Model
         'user_id',
         'creator_id',
         'tier_id',
+        'pending_tier_id',
+        'pending_effective_at',
         'starts_at',
         'ends_at',
         'last_invoice_id',
@@ -22,6 +24,7 @@ class Subscription extends Model
     protected $casts = [
         'starts_at' => 'datetime',
         'ends_at' => 'datetime',
+        'pending_effective_at' => 'datetime',
     ];
 
     public function user(): BelongsTo
@@ -42,5 +45,10 @@ class Subscription extends Model
     public function tier(): BelongsTo
     {
         return $this->belongsTo(Tier::class, 'tier_id');
+    }
+
+    public function pendingTier(): BelongsTo
+    {
+        return $this->belongsTo(Tier::class, 'pending_tier_id');
     }
 }

@@ -18,14 +18,18 @@ class Tier extends Model
         'description',
         'tier_level',
         'price_atomic',
+        'yearly_price_atomic',
+        'yearly_duration_days',
         'currency',
         'duration_days',
         'is_active',
         'position',
+        'is_most_popular',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
+        'is_most_popular' => 'boolean',
     ];
 
     public function creator(): BelongsTo

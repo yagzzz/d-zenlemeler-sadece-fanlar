@@ -11,7 +11,9 @@ use App\Http\Controllers\FeedController;
 use App\Http\Controllers\MediaController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PublicCreatorProfileController;
+use App\Http\Controllers\PublicCreatorTierCompareController;
 use App\Http\Controllers\PublicCreatorTiersController;
+use App\Http\Controllers\SubscriptionTierController;
 use App\Http\Controllers\TipController;
 use App\Http\Controllers\Admin\CreatorApplicationController as AdminCreatorApplicationController;
 
@@ -101,4 +103,14 @@ Route::prefix('api')
         Route::get('/creators/{username}/tips', [TipController::class, 'listCreatorTips'])
             ->middleware('auth');
         Route::get('/contents/{content}/tips', [TipController::class, 'contentTipAggregate']);
+    });
+
+Route::prefix('api')
+    ->middleware(['feature:tier_ux'])
+    ->group(function () {
+        Route::get('/creators/{username}/tiers/compare', [PublicCreatorTierCompareController::class, 'show']);
+        Route::post('/creators/{username}/subscribe/invoice', [SubscriptionTierController::class, 'createInvoice'])
+            ->middleware('auth');
+        Route::post('/creators/{username}/subscription/change-tier/invoice', [SubscriptionTierController::class, 'changeTierInvoice'])
+            ->middleware('auth');
     });

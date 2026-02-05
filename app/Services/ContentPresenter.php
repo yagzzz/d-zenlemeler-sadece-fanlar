@@ -63,6 +63,7 @@ class ContentPresenter
             'type' => $ctaType,
             'required_tier_level' => $tierHint['required_level'] ?? null,
             'required_tier_name' => $tierHint['required_name'] ?? null,
+            'endpoint' => $ctaType === 'upgrade' ? '/api/creators/{username}/tiers/compare' : null,
         ], fn ($value) => $value !== null);
 
         return ['type' => 'blur', 'cta' => $cta];

@@ -13,6 +13,7 @@ return [
         'media_core' => false,
         'creator_profile' => false,
         'tiers' => false,
+        'tier_ux' => false,
         'tips' => false,
     ],
 ];

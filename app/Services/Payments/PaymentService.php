@@ -20,7 +20,7 @@ class PaymentService
     {
     }
 
-    public function createSubscriptionInvoice(User $payer, Tier $tier): Invoice
+    public function createSubscriptionInvoice(User $payer, Tier $tier, string $billing = 'monthly'): Invoice
     {
         if (! $tier->is_active) {
             throw ValidationException::withMessages([
@@ -28,8 +28,18 @@ class PaymentService
             ]);
         }
 
-        $durationDays = (int) $tier->duration_days;
-        $priceAtomic = (int) $tier->price_atomic;
+        if ($billing === 'yearly' && ! $tier->yearly_price_atomic) {
+            throw ValidationException::withMessages([
+                'billing' => 'Yearly billing is not available for this tier.',
+            ]);
+        }
+
+        $durationDays = $billing === 'yearly'
+            ? (int) ($tier->yearly_duration_days ?? 365)
+            : (int) $tier->duration_days;
+        $priceAtomic = $billing === 'yearly'
+            ? (int) $tier->yearly_price_atomic
+            : (int) $tier->price_atomic;
         $creatorId = $tier->creator_id;
         $expiresAt = Carbon::now()->addMinutes(30);
         $session = $this->gateway->createInvoice($priceAtomic, 'XMR', $expiresAt, [
@@ -55,6 +65,7 @@ class PaymentService
                 'duration_days' => $durationDays,
                 'tier_id' => $tier->id,
                 'creator_id' => $creatorId,
+                'billing' => $billing,
                 'platform_fee_atomic' => $platformFee,
             ],
         ]);
@@ -312,6 +323,8 @@ class PaymentService
         $subscription->last_invoice_id = $invoice->id;
         if ($tierId) {
             $subscription->tier_id = $tierId;
+            $subscription->pending_tier_id = null;
+            $subscription->pending_effective_at = null;
         }
         $subscription->save();
 

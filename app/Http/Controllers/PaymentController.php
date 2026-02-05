@@ -15,6 +15,7 @@ class PaymentController extends Controller
     {
         $data = $request->validate([
             'tier_id' => ['required', 'string', 'exists:tiers,id'],
+            'billing' => ['nullable', 'in:monthly,yearly'],
         ]);
 
         $tier = Tier::query()->findOrFail($data['tier_id']);
@@ -28,7 +29,11 @@ class PaymentController extends Controller
             return response()->json(['message' => 'Creator not approved.'], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
-        $invoice = $service->createSubscriptionInvoice($request->user(), $tier);
+        $invoice = $service->createSubscriptionInvoice(
+            $request->user(),
+            $tier,
+            $data['billing'] ?? 'monthly'
+        );
 
         return response()->json([
             'invoice_id' => $invoice->id,

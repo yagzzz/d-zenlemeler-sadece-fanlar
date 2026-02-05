@@ -25,9 +25,12 @@ class CreatorTierController extends Controller
             'description' => ['nullable', 'string'],
             'tier_level' => ['required', 'integer', 'min:1'],
             'price_atomic' => ['required', 'integer', 'min:0'],
+            'yearly_price_atomic' => ['nullable', 'integer', 'min:0'],
+            'yearly_duration_days' => ['nullable', 'integer', 'min:1', 'max:3650'],
             'currency' => ['nullable', 'string', 'max:10'],
             'duration_days' => ['nullable', 'integer', 'min:1', 'max:3650'],
             'position' => ['nullable', 'integer', 'min:0', 'max:65535'],
+            'is_most_popular' => ['nullable', 'boolean'],
         ]);
 
         $tier = $service->createTier($request->user(), $data);
@@ -44,10 +47,13 @@ class CreatorTierController extends Controller
             'description' => ['nullable', 'string'],
             'tier_level' => ['sometimes', 'integer', 'min:1'],
             'price_atomic' => ['sometimes', 'integer', 'min:0'],
+            'yearly_price_atomic' => ['nullable', 'integer', 'min:0'],
+            'yearly_duration_days' => ['nullable', 'integer', 'min:1', 'max:3650'],
             'currency' => ['nullable', 'string', 'max:10'],
             'duration_days' => ['sometimes', 'integer', 'min:1', 'max:3650'],
             'position' => ['sometimes', 'integer', 'min:0', 'max:65535'],
             'is_active' => ['sometimes', 'boolean'],
+            'is_most_popular' => ['sometimes', 'boolean'],
         ]);
 
         $updated = $service->updateTier($request->user(), $tier, $data);

@@ -85,6 +85,8 @@ class DefaultAccessEngine implements AccessEngine
             return new AccessDecision(false, 'subscription_required');
         }
 
+        $subscription = $this->applyPendingTier($subscription);
+
         $requiredTier = $this->resolveRequiredTier($content);
 
         if (! $requiredTier) {
@@ -152,5 +154,24 @@ class DefaultAccessEngine implements AccessEngine
         }
 
         return Tier::query()->find($content->required_tier_id);
+    }
+
+    private function applyPendingTier(Subscription $subscription): Subscription
+    {
+        if (! $subscription->pending_tier_id || ! $subscription->pending_effective_at) {
+            return $subscription;
+        }
+
+        if ($subscription->pending_effective_at->isFuture()) {
+            return $subscription;
+        }
+
+        $subscription->forceFill([
+            'tier_id' => $subscription->pending_tier_id,
+            'pending_tier_id' => null,
+            'pending_effective_at' => null,
+        ])->save();
+
+        return $subscription;
     }
 }
