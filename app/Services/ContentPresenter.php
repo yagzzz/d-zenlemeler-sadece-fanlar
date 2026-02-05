@@ -18,6 +18,7 @@ class ContentPresenter
         $decision = $this->accessEngine->decide(new AccessRequest($user, $content->visibility, $content->creator_id, $content->id));
         $preview = $this->buildPreview($decision->granted, $decision->reason, $decision->tierHint);
         $locked = ! $decision->granted;
+        $tipsAggregate = $this->buildTipsAggregate($content);
 
         return [
             'id' => $content->id,
@@ -31,6 +32,11 @@ class ContentPresenter
             'lock_reason' => $locked ? $decision->reason : null,
             'cta' => $preview['cta'],
             'tier_hint' => $decision->tierHint,
+            'tips' => $tipsAggregate,
+            'tip_cta' => [
+                'type' => 'tip',
+                'min_atomic' => (int) config('tips.min_atomic', 1000),
+            ],
             'access' => [
                 'granted' => $decision->granted,
                 'reason' => $decision->reason,
@@ -60,5 +66,18 @@ class ContentPresenter
         ], fn ($value) => $value !== null);
 
         return ['type' => 'blur', 'cta' => $cta];
+    }
+
+    private function buildTipsAggregate(Content $content): array
+    {
+        $aggregate = \App\Models\Tip::query()
+            ->where('content_id', $content->id)
+            ->selectRaw('COUNT(*) as tip_count, COALESCE(SUM(amount_atomic), 0) as total_atomic')
+            ->first();
+
+        return [
+            'count' => (int) ($aggregate->tip_count ?? 0),
+            'total_atomic' => (int) ($aggregate->total_atomic ?? 0),
+        ];
     }
 }

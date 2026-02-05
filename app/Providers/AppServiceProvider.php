@@ -9,6 +9,7 @@ use App\Services\Media\LocalSignedDriver;
 use App\Services\Media\S3CompatibleDriver;
 use App\Services\Media\StorageDriver;
 use App\Services\TierService;
+use App\Services\TipService;
 use App\Services\Payments\MockMoneroGateway;
 use App\Services\Payments\MockPaymentSimulator;
 use App\Services\Payments\PaymentGateway;
@@ -24,6 +25,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(AccessEngine::class, DefaultAccessEngine::class);
         $this->app->bind(CreatorProfileService::class, CreatorProfileService::class);
         $this->app->bind(TierService::class, TierService::class);
+        $this->app->bind(TipService::class, TipService::class);
         $this->app->singleton(MockPaymentSimulator::class);
         $this->app->bind(PaymentGateway::class, MockMoneroGateway::class);
         $this->app->bind(StorageDriver::class, function () {

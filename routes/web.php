@@ -12,6 +12,7 @@ use App\Http\Controllers\MediaController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PublicCreatorProfileController;
 use App\Http\Controllers\PublicCreatorTiersController;
+use App\Http\Controllers\TipController;
 use App\Http\Controllers\Admin\CreatorApplicationController as AdminCreatorApplicationController;
 
 Route::get('/', function () {
@@ -89,3 +90,15 @@ Route::middleware(['feature:creator_profile'])->group(function () {
 Route::middleware(['feature:tiers'])->group(function () {
     Route::get('/creators/{username}/tiers', [PublicCreatorTiersController::class, 'index']);
 });
+
+Route::prefix('api')
+    ->middleware(['feature:tips'])
+    ->group(function () {
+        Route::post('/creators/{username}/tips/invoice', [TipController::class, 'createCreatorTipInvoice'])
+            ->middleware('auth');
+        Route::post('/invoices/{invoice}/verify', [TipController::class, 'verifyInvoice'])
+            ->middleware('auth');
+        Route::get('/creators/{username}/tips', [TipController::class, 'listCreatorTips'])
+            ->middleware('auth');
+        Route::get('/contents/{content}/tips', [TipController::class, 'contentTipAggregate']);
+    });

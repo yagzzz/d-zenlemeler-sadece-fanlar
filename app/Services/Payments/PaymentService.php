@@ -7,6 +7,7 @@ use App\Models\Invoice;
 use App\Models\Purchase;
 use App\Models\Subscription;
 use App\Models\Tier;
+use App\Models\Tip;
 use App\Models\User;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Carbon;
@@ -97,6 +98,40 @@ class PaymentService
         ]);
     }
 
+    public function createTipInvoice(
+        User $payer,
+        User $creator,
+        int $amountAtomic,
+        ?Content $content = null,
+        ?string $message = null,
+        bool $isAnonymous = false
+    ): Invoice {
+        $expiresAt = Carbon::now()->addMinutes(30);
+        $session = $this->gateway->createInvoice($amountAtomic, 'XMR', $expiresAt, [
+            'invoice_type' => 'tip',
+            'creator_id' => $creator->id,
+            'content_id' => $content?->id,
+        ]);
+
+        return Invoice::create([
+            'payer_id' => $payer->id,
+            'payee_id' => $creator->id,
+            'invoice_type' => 'tip',
+            'status' => 'pending',
+            'amount_atomic' => $amountAtomic,
+            'currency' => 'XMR',
+            'address' => $session->address,
+            'payment_reference' => $session->reference,
+            'expires_at' => $expiresAt,
+            'metadata' => [
+                'creator_id' => $creator->id,
+                'content_id' => $content?->id,
+                'message' => $message,
+                'is_anonymous' => $isAnonymous,
+            ],
+        ]);
+    }
+
     public function verifyInvoiceAndApply(string $reference): array
     {
         $invoice = Invoice::query()->where('payment_reference', $reference)->first();
@@ -149,12 +184,24 @@ class PaymentService
                 ];
             }
 
+            if ($invoice->invoice_type === 'tip') {
+                $tip = $this->applyTip($invoice);
+
+                return [
+                    'status' => 'paid',
+                    'subscription_ends_at' => null,
+                    'purchase' => null,
+                    'tip' => $tip ? ['id' => $tip->id] : null,
+                ];
+            }
+
             $subscription = $this->extendSubscription($invoice);
 
             return [
                 'status' => 'paid',
                 'subscription_ends_at' => $subscription->ends_at,
                 'purchase' => null,
+                'tip' => null,
             ];
         });
     }
@@ -173,12 +220,24 @@ class PaymentService
             ];
         }
 
+        if ($invoice->invoice_type === 'tip') {
+            $tip = $this->getTip($invoice);
+
+            return [
+                'status' => 'paid',
+                'subscription_ends_at' => null,
+                'purchase' => null,
+                'tip' => $tip ? ['id' => $tip->id] : null,
+            ];
+        }
+
         $subscription = $this->getSubscription($invoice);
 
         return [
             'status' => 'paid',
             'subscription_ends_at' => $subscription?->ends_at,
             'purchase' => null,
+            'tip' => null,
         ];
     }
 
@@ -188,6 +247,7 @@ class PaymentService
             'status' => $status,
             'subscription_ends_at' => null,
             'purchase' => null,
+            'tip' => null,
         ];
     }
 
@@ -264,5 +324,30 @@ class PaymentService
             ->where('user_id', $invoice->payer_id)
             ->where('creator_id', $invoice->payee_id)
             ->first();
+    }
+
+    private function applyTip(Invoice $invoice): ?Tip
+    {
+        $tip = Tip::query()->where('invoice_id', $invoice->id)->first();
+
+        if ($tip) {
+            return $tip;
+        }
+
+        return Tip::create([
+            'payer_id' => $invoice->payer_id,
+            'creator_id' => $invoice->payee_id,
+            'content_id' => $invoice->metadata['content_id'] ?? null,
+            'invoice_id' => $invoice->id,
+            'amount_atomic' => $invoice->amount_atomic,
+            'currency' => $invoice->currency,
+            'message' => $invoice->metadata['message'] ?? null,
+            'is_anonymous' => (bool) ($invoice->metadata['is_anonymous'] ?? false),
+        ]);
+    }
+
+    private function getTip(Invoice $invoice): ?Tip
+    {
+        return Tip::query()->where('invoice_id', $invoice->id)->first();
     }
 }

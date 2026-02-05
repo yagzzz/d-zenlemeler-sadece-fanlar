@@ -51,6 +51,7 @@ class PaymentController extends Controller
             'status' => $result['status'],
             'subscription_ends_at' => optional($result['subscription_ends_at'])->toISOString(),
             'purchase' => $result['purchase'] ?? null,
+            'tip' => $result['tip'] ?? null,
         ]);
     }
 
