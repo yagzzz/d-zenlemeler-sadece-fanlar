@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CreatorApplicationController;
+use App\Http\Controllers\CreatorContentController;
 use App\Http\Controllers\Admin\CreatorApplicationController as AdminCreatorApplicationController;
 
 Route::get('/', function () {
@@ -21,4 +22,12 @@ Route::prefix('admin')
         Route::get('/creator-applications', [AdminCreatorApplicationController::class, 'index']);
         Route::post('/creator-applications/{application}/approve', [AdminCreatorApplicationController::class, 'approve']);
         Route::post('/creator-applications/{application}/reject', [AdminCreatorApplicationController::class, 'reject']);
+    });
+
+Route::prefix('creator')
+    ->middleware(['auth', 'feature:content_core'])
+    ->group(function () {
+        Route::post('/content', [CreatorContentController::class, 'store']);
+        Route::patch('/content/{content}', [CreatorContentController::class, 'update']);
+        Route::post('/content/{content}/publish', [CreatorContentController::class, 'publish']);
     });
