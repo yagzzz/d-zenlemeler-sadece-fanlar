@@ -43,3 +43,10 @@
         transform: translateX(100%);
     }
 }
+
+/* ── Modal overlays ─────────────────────────────────────────────────── */
+#tier-modal.hidden,
+#payment-modal.hidden,
+#tip-modal.hidden {
+    display: none !important;
+}

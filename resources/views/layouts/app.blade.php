@@ -14,33 +14,33 @@
         <script defer src="/app.js"></script>
     @endif
 </head>
-<body class="min-h-screen bg-slate-950 text-slate-100 antialiased" data-ui-enabled="{{ config('features.flags.ui') ? '1' : '0' }}" data-ui-polish-enabled="{{ config('features.flags.ui_polish') ? '1' : '0' }}">
+<body class="min-h-screen bg-slate-950 text-slate-100 antialiased" data-ui-enabled="{{ config('features.flags.ui') ? '1' : '0' }}" data-ui-polish-enabled="{{ config('features.flags.ui_polish') ? '1' : '0' }}" data-app-env="{{ app()->environment() }}">
     <div class="min-h-screen pb-24">
         @yield('content')
     </div>
 
-    <nav class="fixed bottom-0 left-0 right-0 z-40 bg-slate-950/90 backdrop-blur border-t border-white/10">
+    <nav class="fixed bottom-0 left-0 right-0 z-40 bg-slate-950/90 backdrop-blur border-t border-white/10" data-nav="bottom">
         <div class="mx-auto max-w-4xl px-6 py-3 flex items-center justify-between text-xs uppercase tracking-widest text-slate-400">
             <a href="/" class="flex flex-col items-center gap-1 text-slate-100">
                 <span class="text-xl">🏠</span>
                 <span>Home</span>
             </a>
-            <button type="button" class="flex flex-col items-center gap-1">
+            <a href="/explore" class="flex flex-col items-center gap-1 hover:text-slate-100 transition-colors">
                 <span class="text-xl">✨</span>
                 <span>Explore</span>
-            </button>
-            <button type="button" class="flex flex-col items-center gap-1">
+            </a>
+            <a href="/create" class="flex flex-col items-center gap-1 hover:text-slate-100 transition-colors">
                 <span class="text-xl">➕</span>
                 <span>Create</span>
-            </button>
-            <button type="button" class="flex flex-col items-center gap-1">
+            </a>
+            <a href="/inbox" class="flex flex-col items-center gap-1 hover:text-slate-100 transition-colors">
                 <span class="text-xl">💬</span>
                 <span>Inbox</span>
-            </button>
-            <button type="button" class="flex flex-col items-center gap-1">
+            </a>
+            <a href="/profile" class="flex flex-col items-center gap-1 hover:text-slate-100 transition-colors">
                 <span class="text-xl">👤</span>
                 <span>Profile</span>
-            </button>
+            </a>
         </div>
     </nav>
 

@@ -23,6 +23,22 @@ Route::get('/', function () {
     return view('feed.index');
 });
 
+Route::get('/explore', function () {
+    return view('pages.explore');
+});
+
+Route::get('/create', function () {
+    return view('pages.create');
+});
+
+Route::get('/inbox', function () {
+    return view('pages.inbox');
+});
+
+Route::get('/profile', function () {
+    return view('pages.profile');
+});
+
 Route::get('/health', function () {
     return response()->json(['status' => 'ok']);
 });

@@ -1,5 +1,28 @@
 import './bootstrap';
 
+/* ───────────────────── Global Error Logger (local only) ───────────────── */
+if (document.body.dataset.appEnv === 'local') {
+	window.addEventListener('error', (e) => {
+		console.error('[SF Error]', e.message, e.filename, e.lineno);
+		debugToast(`JS Error: ${e.message}`);
+	});
+	window.addEventListener('unhandledrejection', (e) => {
+		console.error('[SF Rejection]', e.reason);
+		debugToast(`Unhandled: ${e.reason}`);
+	});
+}
+
+function debugToast(msg) {
+	const root = document.getElementById('toast-root');
+	if (!root) return;
+	const el = document.createElement('div');
+	el.className = 'rounded-2xl px-4 py-3 text-xs shadow-lg bg-amber-600 text-white';
+	el.textContent = msg;
+	root.appendChild(el);
+	setTimeout(() => el.remove(), 5000);
+}
+
+/* ───────────────────── Constants ──────────────────────────────────────── */
 const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
 const toastRoot = document.getElementById('toast-root');
 
@@ -16,6 +39,7 @@ const ctaLabels = (() => {
 const uiEnabled = document.body.dataset.uiEnabled === '1';
 const uiPolishEnabled = document.body.dataset.uiPolishEnabled === '1';
 
+/* ───────────────────── Toast ─────────────────────────────────────────── */
 const showToast = (message, type = 'info') => {
 	if (!toastRoot) return;
 	const el = document.createElement('div');
@@ -25,10 +49,12 @@ const showToast = (message, type = 'info') => {
 	setTimeout(() => el.remove(), 3000);
 };
 
+/* ───────────────────── Fetch Helper ──────────────────────────────────── */
 const fetchJson = async (url, options = {}) => {
 	const response = await fetch(url, {
 		headers: {
 			'Content-Type': 'application/json',
+			Accept: 'application/json',
 			'X-CSRF-TOKEN': csrfToken || '',
 			...(options.headers || {}),
 		},
@@ -85,35 +111,51 @@ const renderContentCard = (item) => {
 	return node;
 };
 
-const setupTierModal = () => {
-	const modal = document.getElementById('tier-modal');
-	if (!modal) return null;
-	const closeButtons = modal.querySelectorAll('[data-tier-close]');
-	closeButtons.forEach((btn) => btn.addEventListener('click', () => modal.classList.add('hidden')));
-	return modal;
-};
+/* ═══════════════════════════════════════════════════════════════════════
+   Modal Manager — single registration, ESC + backdrop + scroll lock
+   ═══════════════════════════════════════════════════════════════════════ */
+const ModalManager = (() => {
+	const registered = {};
 
-const setupPaymentModal = () => {
-	const modal = document.getElementById('payment-modal');
-	if (!modal) return null;
-	const closeButtons = modal.querySelectorAll('[data-payment-close]');
-	closeButtons.forEach((btn) => btn.addEventListener('click', () => modal.classList.add('hidden')));
-	modal.querySelector('#payment-close-success')?.addEventListener('click', () => modal.classList.add('hidden'));
-	return modal;
-};
+	const register = (id) => {
+		const el = document.getElementById(id);
+		if (!el || registered[id]) return;
+		registered[id] = el;
 
-const setupTipModal = () => {
-	const modal = document.getElementById('tip-modal');
-	if (!modal) return null;
-	const closeButtons = modal.querySelectorAll('[data-tip-close]');
-	closeButtons.forEach((btn) => btn.addEventListener('click', () => modal.classList.add('hidden')));
-	return modal;
-};
+		// Close buttons (data-*-close attributes)
+		el.querySelectorAll('[data-tier-close],[data-payment-close],[data-tip-close]')
+			.forEach((btn) => btn.addEventListener('click', () => close(id)));
+
+		// ESC key
+		el.addEventListener('keydown', (e) => {
+			if (e.key === 'Escape') close(id);
+		});
+	};
+
+	const open = (id) => {
+		if (!registered[id]) register(id);
+		const el = registered[id];
+		if (!el) return null;
+		el.classList.remove('hidden');
+		el.setAttribute('tabindex', '-1');
+		el.focus();
+		document.body.style.overflow = 'hidden';
+		return el;
+	};
+
+	const close = (id) => {
+		const el = registered[id];
+		if (!el) return;
+		el.classList.add('hidden');
+		document.body.style.overflow = '';
+	};
+
+	return { register, open, close };
+})();
 
 const openTierModal = async (username) => {
-	const modal = setupTierModal();
+	const modal = ModalManager.open('tier-modal');
 	if (!modal || !username) return;
-	modal.classList.remove('hidden');
 
 	const list = modal.querySelector('#tier-compare-list');
 	if (!list) return;
@@ -144,9 +186,8 @@ const openTierModal = async (username) => {
 };
 
 const openPaymentModal = ({ summary, invoiceAction }) => {
-	const modal = setupPaymentModal();
+	const modal = ModalManager.open('payment-modal');
 	if (!modal) return;
-	modal.classList.remove('hidden');
 
 	const summaryEl = modal.querySelector('#payment-summary');
 	const stepSummary = modal.querySelector('[data-step="summary"]');
@@ -176,9 +217,8 @@ const openPaymentModal = ({ summary, invoiceAction }) => {
 };
 
 const openPaymentModalWithInvoice = async (invoice) => {
-	const modal = setupPaymentModal();
+	const modal = ModalManager.open('payment-modal');
 	if (!modal) return;
-	modal.classList.remove('hidden');
 
 	const stepSummary = modal.querySelector('[data-step="summary"]');
 	const stepWaiting = modal.querySelector('[data-step="waiting"]');
@@ -203,10 +243,8 @@ const openPaymentModalWithInvoice = async (invoice) => {
 };
 
 const openTipModal = ({ creator, contentId }) => {
-	if (!uiPolishEnabled) return;
-	const modal = setupTipModal();
+	const modal = ModalManager.open('tip-modal');
 	if (!modal || !creator) return;
-	modal.classList.remove('hidden');
 	modal.dataset.creator = creator;
 	modal.dataset.contentId = contentId || '';
 };
@@ -237,27 +275,34 @@ const pollVerify = async (invoiceId) => {
 };
 
 const setupFeed = async () => {
-	if (!uiEnabled) return;
 	const feedRoot = document.querySelector('[data-page="feed"]');
 	if (!feedRoot) return;
 	const endpoint = feedRoot.dataset.feedEndpoint;
 	const skeleton = document.getElementById('feed-skeleton');
 	const list = document.getElementById('feed-list');
+	const emptyState = document.getElementById('feed-empty');
 
 	try {
 		const payload = await fetchJson(endpoint);
 		skeleton?.remove();
+
+		if (!payload.data || payload.data.length === 0) {
+			if (emptyState) emptyState.classList.remove('hidden');
+			return;
+		}
+
 		payload.data.forEach((item) => {
 			const node = renderContentCard(item);
 			if (node) list?.appendChild(node);
 		});
 	} catch {
+		skeleton?.remove();
 		showToast('Feed yüklenemedi', 'error');
+		if (emptyState) emptyState.classList.remove('hidden');
 	}
 };
 
 const setupCreatorPage = async () => {
-	if (!uiEnabled) return;
 	const page = document.querySelector('[data-page="creator"]');
 	if (!page) return;
 	const profileEndpoint = page.dataset.profileEndpoint;
@@ -322,8 +367,29 @@ const setupCreatorPage = async () => {
 
 const setupGlobalActions = () => {
 	document.body.addEventListener('click', async (event) => {
-		const target = event.target;
-		if (!(target instanceof HTMLElement)) return;
+		const target = event.target.closest('[data-action], .cta-button, [data-tier-id]');
+		if (!target) return;
+
+		/* ── data-action delegation (nav, modals) ── */
+		const action = target.dataset.action;
+		if (action === 'navigate') {
+			event.preventDefault();
+			const href = target.dataset.href;
+			if (href) window.location.href = href;
+			return;
+		}
+		if (action === 'open-tier-modal') {
+			const creator = target.dataset.creator;
+			if (creator) openTierModal(creator);
+			return;
+		}
+		if (action === 'open-tip-modal') {
+			const creator = target.dataset.creator;
+			if (creator) openTipModal({ creator });
+			return;
+		}
+
+		/* ── CTA buttons (content cards) ── */
 		if (target.matches('.cta-button')) {
 			const reason = target.dataset.reason;
 			const creator = target.dataset.creator;
@@ -354,6 +420,7 @@ const setupGlobalActions = () => {
 			}
 		}
 
+		/* ── Tier select buttons ── */
 		if (target.matches('[data-tier-id]')) {
 			const tierId = target.getAttribute('data-tier-id');
 			const creator = target.getAttribute('data-creator');
@@ -370,14 +437,13 @@ const setupGlobalActions = () => {
 };
 
 const setupTipForm = () => {
-	if (!uiPolishEnabled) return;
-	const modal = setupTipModal();
-	if (!modal) return;
 	const form = document.getElementById('tip-form');
 	if (!form) return;
+	const modal = document.getElementById('tip-modal');
 
 	form.addEventListener('submit', async (event) => {
 		event.preventDefault();
+		if (!modal) return;
 		const creator = modal.dataset.creator;
 		const contentId = modal.dataset.contentId;
 		const amount = Number(document.getElementById('tip-amount')?.value || 0);
@@ -397,7 +463,7 @@ const setupTipForm = () => {
 					content_id: contentId ? Number(contentId) : null,
 				}),
 			});
-			modal.classList.add('hidden');
+			ModalManager.close('tip-modal');
 			await openPaymentModalWithInvoice(invoice);
 			showToast('Tip doğrulandı');
 		} catch {
@@ -411,6 +477,16 @@ document.addEventListener('DOMContentLoaded', () => {
 		console.info('UI disabled');
 		return;
 	}
+
+	// Register modals once at boot
+	ModalManager.register('tier-modal');
+	ModalManager.register('payment-modal');
+	ModalManager.register('tip-modal');
+
+	// Payment success close
+	document.getElementById('payment-close-success')?.addEventListener('click', () => {
+		ModalManager.close('payment-modal');
+	});
 
 	setupFeed();
 	setupCreatorPage();
