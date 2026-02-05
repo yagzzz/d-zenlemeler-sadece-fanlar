@@ -3,6 +3,8 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CreatorApplicationController;
 use App\Http\Controllers\CreatorContentController;
+use App\Http\Controllers\CreatorContentsController;
+use App\Http\Controllers\FeedController;
 use App\Http\Controllers\Admin\CreatorApplicationController as AdminCreatorApplicationController;
 
 Route::get('/', function () {
@@ -31,3 +33,8 @@ Route::prefix('creator')
         Route::patch('/content/{content}', [CreatorContentController::class, 'update']);
         Route::post('/content/{content}/publish', [CreatorContentController::class, 'publish']);
     });
+
+Route::middleware(['feature:feed'])->group(function () {
+    Route::get('/feed', [FeedController::class, 'index']);
+    Route::get('/creators/{user}/contents', [CreatorContentsController::class, 'index']);
+});
