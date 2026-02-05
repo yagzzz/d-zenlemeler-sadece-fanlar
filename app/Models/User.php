@@ -21,6 +21,11 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
+        'creator_applied_at',
+        'creator_approved_at',
+        'creator_rejected_at',
+        'creator_rejection_reason',
     ];
 
     /**
@@ -43,6 +48,9 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'creator_applied_at' => 'datetime',
+            'creator_approved_at' => 'datetime',
+            'creator_rejected_at' => 'datetime',
         ];
     }
 }
