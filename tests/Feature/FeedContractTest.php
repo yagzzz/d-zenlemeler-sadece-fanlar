@@ -41,7 +41,9 @@ it('returns feed contract for guest users', function () {
     expect($data[0]['access']['reason'])->toBe('not_logged_in');
     expect($data[0]['preview'])->toBe([
         'type' => 'blur',
-        'cta' => 'login',
+        'cta' => [
+            'type' => 'register',
+        ],
     ]);
     expect($data[0]['body'])->toBeNull();
 
