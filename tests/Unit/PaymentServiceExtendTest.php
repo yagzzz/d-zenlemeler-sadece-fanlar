@@ -8,7 +8,7 @@ use App\Services\Payments\PaymentService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 
-uses(RefreshDatabase::class);
+uses(Tests\TestCase::class, RefreshDatabase::class);
 
 it('extends from existing ends_at when active', function () {
     config()->set('features.flags.payments_core', true);
