@@ -13,8 +13,8 @@ class DefaultAccessEngine implements AccessEngine
         return match ($request->visibility) {
             'public' => new AccessDecision(true),
             'registered_only' => $this->decideRegisteredOnly($request),
-            'subscriber_only' => new AccessDecision(false, 'not_implemented'),
-            'ppv' => new AccessDecision(false, 'not_implemented'),
+            'subscriber_only' => new AccessDecision(false, 'subscription_required'),
+            'ppv' => new AccessDecision(false, 'ppv_required'),
             default => new AccessDecision(false, 'invalid_visibility'),
         };
     }
@@ -23,10 +23,6 @@ class DefaultAccessEngine implements AccessEngine
     {
         if ($request->user === null) {
             return new AccessDecision(false, 'not_logged_in');
-        }
-
-        if ($request->user->email_verified_at === null) {
-            return new AccessDecision(false, 'not_verified');
         }
 
         return new AccessDecision(true);
