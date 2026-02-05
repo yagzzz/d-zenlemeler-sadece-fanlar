@@ -406,7 +406,14 @@ const setupTipForm = () => {
 	});
 };
 
-setupFeed();
-setupCreatorPage();
-setupGlobalActions();
-setupTipForm();
+document.addEventListener('DOMContentLoaded', () => {
+	if (!uiEnabled) {
+		console.info('UI disabled');
+		return;
+	}
+
+	setupFeed();
+	setupCreatorPage();
+	setupGlobalActions();
+	setupTipForm();
+});

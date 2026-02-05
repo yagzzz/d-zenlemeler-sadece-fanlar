@@ -6,7 +6,8 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ config('app.name', 'Sadece Fanlar') }}</title>
     @php($hasViteManifest = is_file(public_path('build/manifest.json')))
-    @if ($hasViteManifest)
+    @php($hasViteHot = is_file(storage_path('framework/vite.hot')))
+    @if ($hasViteHot || $hasViteManifest)
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     @else
         <link rel="stylesheet" href="/app.css">
