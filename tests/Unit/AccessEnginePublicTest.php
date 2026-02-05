@@ -3,6 +3,8 @@
 use App\Services\AccessEngine\AccessRequest;
 use App\Services\AccessEngine\DefaultAccessEngine;
 
+uses(Tests\TestCase::class);
+
 it('grants access for public visibility', function () {
     config()->set('features.flags.access_engine', true);
 

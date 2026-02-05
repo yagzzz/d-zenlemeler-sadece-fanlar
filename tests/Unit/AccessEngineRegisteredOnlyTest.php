@@ -4,6 +4,8 @@ use App\Models\User;
 use App\Services\AccessEngine\AccessRequest;
 use App\Services\AccessEngine\DefaultAccessEngine;
 
+uses(Tests\TestCase::class);
+
 it('denies registered_only when user is not logged in', function () {
     config()->set('features.flags.access_engine', true);
 
