@@ -6,7 +6,8 @@ class AccessDecision
 {
     public function __construct(
         public readonly bool $granted,
-        public readonly ?string $reason = null
+        public readonly ?string $reason = null,
+        public readonly ?array $tierHint = null
     ) {
     }
 }

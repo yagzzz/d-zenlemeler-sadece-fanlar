@@ -234,6 +234,7 @@ class PaymentService
     private function extendSubscription(Invoice $invoice): Subscription
     {
         $durationDays = (int) ($invoice->metadata['duration_days'] ?? 0);
+        $tierId = $invoice->metadata['tier_id'] ?? null;
         $now = Carbon::now();
 
         $subscription = Subscription::query()->firstOrNew([
@@ -249,6 +250,9 @@ class PaymentService
         }
 
         $subscription->last_invoice_id = $invoice->id;
+        if ($tierId) {
+            $subscription->tier_id = $tierId;
+        }
         $subscription->save();
 
         return $subscription;

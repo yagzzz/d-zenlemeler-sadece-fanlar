@@ -20,6 +20,9 @@ class ContentFactory extends Factory
             'title' => fake()->sentence(),
             'body' => fake()->paragraph(),
             'visibility' => 'public',
+            'ppv_price_atomic' => null,
+            'ppv_currency' => 'XMR',
+            'required_tier_id' => null,
             'is_published' => false,
             'published_at' => null,
         ];

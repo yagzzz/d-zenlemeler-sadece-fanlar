@@ -13,6 +13,7 @@ class Subscription extends Model
     protected $fillable = [
         'user_id',
         'creator_id',
+        'tier_id',
         'starts_at',
         'ends_at',
         'last_invoice_id',
@@ -36,5 +37,10 @@ class Subscription extends Model
     public function lastInvoice(): BelongsTo
     {
         return $this->belongsTo(Invoice::class, 'last_invoice_id');
+    }
+
+    public function tier(): BelongsTo
+    {
+        return $this->belongsTo(Tier::class, 'tier_id');
     }
 }

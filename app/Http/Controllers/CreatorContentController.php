@@ -14,7 +14,10 @@ class CreatorContentController extends Controller
         $data = $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'body' => ['nullable', 'string'],
-            'visibility' => ['required', 'in:public,registered_only,subscriber_only,ppv'],
+            'visibility' => ['required', 'in:public,registered_only,subscriber_only,ppv,tier_only'],
+            'ppv_price_atomic' => ['nullable', 'integer', 'min:1', 'required_if:visibility,ppv'],
+            'ppv_currency' => ['nullable', 'string', 'max:10'],
+            'required_tier_id' => ['nullable', 'string', 'exists:tiers,id', 'required_if:visibility,tier_only'],
         ]);
 
         $content = $service->createContent($request->user(), $data);
@@ -31,7 +34,10 @@ class CreatorContentController extends Controller
         $data = $request->validate([
             'title' => ['sometimes', 'string', 'max:255'],
             'body' => ['nullable', 'string'],
-            'visibility' => ['sometimes', 'in:public,registered_only,subscriber_only,ppv'],
+            'visibility' => ['sometimes', 'in:public,registered_only,subscriber_only,ppv,tier_only'],
+            'ppv_price_atomic' => ['nullable', 'integer', 'min:1', 'required_if:visibility,ppv'],
+            'ppv_currency' => ['nullable', 'string', 'max:10'],
+            'required_tier_id' => ['nullable', 'string', 'exists:tiers,id', 'required_if:visibility,tier_only'],
         ]);
 
         $updated = $service->updateContent($request->user(), $content, $data);
