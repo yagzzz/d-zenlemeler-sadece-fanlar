@@ -49,4 +49,12 @@ class UserFactory extends Factory
             'role' => 'admin',
         ]);
     }
+
+    public function creator(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => 'creator',
+            'creator_approved_at' => now(),
+        ]);
+    }
 }
