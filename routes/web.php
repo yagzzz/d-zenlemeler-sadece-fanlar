@@ -9,3 +9,7 @@ Route::get('/', function () {
 Route::get('/health', function () {
     return response()->json(['status' => 'ok']);
 });
+
+Route::get('/protected', function () {
+    return response()->json(['status' => 'ok']);
+})->middleware('auth');
