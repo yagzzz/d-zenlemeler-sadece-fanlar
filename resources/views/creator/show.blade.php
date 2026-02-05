@@ -12,7 +12,7 @@
             <div class="absolute inset-0 bg-gradient-to-r from-fuchsia-500/20 via-transparent to-cyan-400/10"></div>
             <div class="relative flex flex-col gap-6">
                 <div class="flex items-center gap-4">
-                    <div class="h-16 w-16 rounded-2xl bg-white/10"></div>
+                    <div id="creator-avatar" class="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-fuchsia-500 to-cyan-400 text-xl font-bold text-white">{{ strtoupper(substr($username, 0, 1)) }}</div>
                     <div>
                         <p class="text-sm uppercase tracking-[0.2em] text-slate-400">Creator</p>
                         <h1 id="creator-name" class="text-2xl font-semibold">{{ $username }}</h1>

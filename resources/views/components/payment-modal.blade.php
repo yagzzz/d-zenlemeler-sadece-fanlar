@@ -1,5 +1,5 @@
 <div id="payment-modal" class="fixed inset-0 z-50 hidden">
-    <div class="absolute inset-0 bg-black/60" data-payment-close></div>
+    <div class="modal-backdrop absolute inset-0 bg-black/60" data-payment-close></div>
     <div class="absolute bottom-0 left-0 right-0 mx-auto max-w-2xl rounded-t-3xl bg-slate-950 border-t border-white/10 p-6">
         <div class="flex items-center justify-between">
             <h3 class="text-lg font-semibold">Ödeme</h3>
