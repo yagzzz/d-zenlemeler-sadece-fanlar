@@ -8,7 +8,11 @@ return [
         'feed' => false,
         'payments_core' => false,
         'payments' => false,
+        'ppv_core' => false,
         'ppv' => false,
+        'media_core' => false,
+        'creator_profile' => false,
+        'tiers' => false,
         'tips' => false,
     ],
 ];

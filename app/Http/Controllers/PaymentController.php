@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Content;
+use App\Models\Tier;
 use App\Models\User;
 use App\Services\Payments\PaymentService;
 use Illuminate\Http\Request;
@@ -12,24 +14,21 @@ class PaymentController extends Controller
     public function createSubscriptionInvoice(Request $request, PaymentService $service)
     {
         $data = $request->validate([
-            'creator_id' => ['required', 'integer', 'exists:users,id'],
-            'duration_days' => ['required', 'integer', 'min:1', 'max:365'],
+            'tier_id' => ['required', 'string', 'exists:tiers,id'],
         ]);
 
-        $creator = User::query()->findOrFail($data['creator_id']);
+        $tier = Tier::query()->findOrFail($data['tier_id']);
+        $creator = User::query()->findOrFail($tier->creator_id);
+
+        if (! $tier->is_active) {
+            return response()->json(['message' => 'Tier is inactive.'], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
 
         if ($creator->creator_approved_at === null) {
             return response()->json(['message' => 'Creator not approved.'], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
-        $amountAtomic = (int) config('payments.subscription_price_atomic_per_day') * $data['duration_days'];
-
-        $invoice = $service->createSubscriptionInvoice(
-            $request->user(),
-            $creator,
-            $data['duration_days'],
-            $amountAtomic
-        );
+        $invoice = $service->createSubscriptionInvoice($request->user(), $tier);
 
         return response()->json([
             'invoice_id' => $invoice->id,
@@ -51,6 +50,26 @@ class PaymentController extends Controller
         return response()->json([
             'status' => $result['status'],
             'subscription_ends_at' => optional($result['subscription_ends_at'])->toISOString(),
+            'purchase' => $result['purchase'] ?? null,
         ]);
+    }
+
+    public function createPpvInvoice(Request $request, PaymentService $service)
+    {
+        $data = $request->validate([
+            'content_id' => ['required', 'integer', 'exists:contents,id'],
+        ]);
+
+        $content = Content::query()->findOrFail($data['content_id']);
+
+        $invoice = $service->createPpvInvoice($request->user(), $content);
+
+        return response()->json([
+            'invoice_id' => $invoice->id,
+            'address' => $invoice->address,
+            'amount_atomic' => $invoice->amount_atomic,
+            'currency' => $invoice->currency,
+            'expires_at' => $invoice->expires_at?->toISOString(),
+        ], Response::HTTP_CREATED);
     }
 }

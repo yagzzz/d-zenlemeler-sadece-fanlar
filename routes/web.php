@@ -4,8 +4,14 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CreatorApplicationController;
 use App\Http\Controllers\CreatorContentController;
 use App\Http\Controllers\CreatorContentsController;
+use App\Http\Controllers\CreatorMediaController;
+use App\Http\Controllers\CreatorProfileController;
+use App\Http\Controllers\CreatorTierController;
 use App\Http\Controllers\FeedController;
+use App\Http\Controllers\MediaController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\PublicCreatorProfileController;
+use App\Http\Controllers\PublicCreatorTiersController;
 use App\Http\Controllers\Admin\CreatorApplicationController as AdminCreatorApplicationController;
 
 Route::get('/', function () {
@@ -35,6 +41,29 @@ Route::prefix('creator')
         Route::post('/content/{content}/publish', [CreatorContentController::class, 'publish']);
     });
 
+Route::prefix('creator')
+    ->middleware(['auth', 'feature:media_core'])
+    ->group(function () {
+        Route::post('/media/initiate', [CreatorMediaController::class, 'initiate']);
+        Route::post('/contents/{content}/media/attach', [CreatorMediaController::class, 'attach']);
+    });
+
+Route::prefix('creator')
+    ->middleware(['auth', 'feature:creator_profile'])
+    ->group(function () {
+        Route::get('/profile', [CreatorProfileController::class, 'show']);
+        Route::put('/profile', [CreatorProfileController::class, 'update']);
+    });
+
+Route::prefix('creator')
+    ->middleware(['auth', 'feature:tiers'])
+    ->group(function () {
+        Route::get('/tiers', [CreatorTierController::class, 'index']);
+        Route::post('/tiers', [CreatorTierController::class, 'store']);
+        Route::patch('/tiers/{tier}', [CreatorTierController::class, 'update']);
+        Route::delete('/tiers/{tier}', [CreatorTierController::class, 'destroy']);
+    });
+
 Route::middleware(['feature:feed'])->group(function () {
     Route::get('/feed', [FeedController::class, 'index']);
     Route::get('/creators/{user}/contents', [CreatorContentsController::class, 'index']);
@@ -43,4 +72,20 @@ Route::middleware(['feature:feed'])->group(function () {
 Route::middleware(['auth', 'feature:payments_core'])->group(function () {
     Route::post('/payments/subscription/invoice', [PaymentController::class, 'createSubscriptionInvoice']);
     Route::post('/payments/verify', [PaymentController::class, 'verify']);
+});
+
+Route::middleware(['auth', 'feature:ppv_core'])->group(function () {
+    Route::post('/payments/ppv/invoice', [PaymentController::class, 'createPpvInvoice']);
+});
+
+Route::middleware(['feature:media_core'])->group(function () {
+    Route::get('/media/{mediaAsset}/url', [MediaController::class, 'viewUrl']);
+});
+
+Route::middleware(['feature:creator_profile'])->group(function () {
+    Route::get('/creators/{username}/profile', [PublicCreatorProfileController::class, 'show']);
+});
+
+Route::middleware(['feature:tiers'])->group(function () {
+    Route::get('/creators/{username}/tiers', [PublicCreatorTiersController::class, 'index']);
 });
