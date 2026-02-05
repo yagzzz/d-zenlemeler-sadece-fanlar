@@ -35,4 +35,12 @@ it('returns creator contents contract for guests', function () {
         'type' => 'none',
         'cta' => null,
     ]);
+    expect($item['tips'])->toBe([
+        'count' => 0,
+        'total_atomic' => 0,
+    ]);
+    expect($item['tip_cta'])->toBe([
+        'type' => 'tip',
+        'min_atomic' => (int) config('tips.min_atomic', 1000),
+    ]);
 });

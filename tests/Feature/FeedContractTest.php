@@ -46,11 +46,27 @@ it('returns feed contract for guest users', function () {
         ],
     ]);
     expect($data[0]['body'])->toBeNull();
+    expect($data[0]['tips'])->toBe([
+        'count' => 0,
+        'total_atomic' => 0,
+    ]);
+    expect($data[0]['tip_cta'])->toBe([
+        'type' => 'tip',
+        'min_atomic' => (int) config('tips.min_atomic', 1000),
+    ]);
 
     expect($data[1]['visibility'])->toBe('public');
     expect($data[1]['access']['granted'])->toBeTrue();
     expect($data[1]['preview'])->toBe([
         'type' => 'none',
         'cta' => null,
+    ]);
+    expect($data[1]['tips'])->toBe([
+        'count' => 0,
+        'total_atomic' => 0,
+    ]);
+    expect($data[1]['tip_cta'])->toBe([
+        'type' => 'tip',
+        'min_atomic' => (int) config('tips.min_atomic', 1000),
     ]);
 });
