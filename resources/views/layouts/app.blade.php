@@ -5,11 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ config('app.name', 'Sadece Fanlar') }}</title>
-    @if (app()->environment('testing') || config('app.env') === 'testing')
+    @php($hasViteManifest = is_file(public_path('build/manifest.json')))
+    @if ($hasViteManifest)
+        @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @else
         <link rel="stylesheet" href="/app.css">
         <script defer src="/app.js"></script>
-    @else
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
     @endif
 </head>
 <body class="min-h-screen bg-slate-950 text-slate-100 antialiased" data-ui-enabled="{{ config('features.flags.ui') ? '1' : '0' }}" data-ui-polish-enabled="{{ config('features.flags.ui_polish') ? '1' : '0' }}">
