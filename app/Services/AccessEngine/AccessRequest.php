@@ -8,7 +8,8 @@ class AccessRequest
 {
     public function __construct(
         public readonly ?User $user,
-        public readonly string $visibility
+        public readonly string $visibility,
+        public readonly ?int $creatorId = null
     ) {
     }
 }

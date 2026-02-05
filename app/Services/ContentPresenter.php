@@ -15,7 +15,7 @@ class ContentPresenter
 
     public function present(Content $content, ?User $user): array
     {
-        $decision = $this->accessEngine->decide(new AccessRequest($user, $content->visibility));
+        $decision = $this->accessEngine->decide(new AccessRequest($user, $content->visibility, $content->creator_id));
         $preview = $this->buildPreview($decision->granted, $decision->reason);
 
         return [
