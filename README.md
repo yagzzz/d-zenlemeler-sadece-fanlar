@@ -12,6 +12,10 @@
 - Sprint 0 tamamlandı.
 - Sprint 1 henüz başlamadı.
 
+## Development & Testing
+
+Testing runs bypass Vite asset compilation to avoid missing manifest errors; when `APP_ENV=testing`, the layout loads static fallback assets from `public/app.css` and `public/app.js` instead of Vite.
+
 ## About Laravel
 
 Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:

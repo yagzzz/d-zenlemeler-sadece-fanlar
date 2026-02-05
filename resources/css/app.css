@@ -1,4 +1,6 @@
-@import 'tailwindcss';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
@@ -8,4 +10,23 @@
 @theme {
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
+}
+
+@layer components {
+    .skeleton-card {
+        @apply relative h-44 w-full overflow-hidden rounded-3xl border border-white/10 bg-white/5;
+    }
+
+    .skeleton-card::after {
+        content: '';
+        @apply absolute inset-0 -translate-x-full animate-pulse bg-gradient-to-r from-transparent via-white/10 to-transparent;
+    }
+
+    .billing-toggle {
+        @apply cursor-pointer rounded-full border border-white/10 px-3 py-1 text-xs text-slate-400;
+    }
+
+    .billing-toggle.active {
+        @apply border-white/40 bg-white/10 text-white;
+    }
 }

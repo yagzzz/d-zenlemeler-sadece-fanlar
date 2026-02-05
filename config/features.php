@@ -15,5 +15,6 @@ return [
         'tiers' => false,
         'tier_ux' => false,
         'tips' => false,
+        'ui' => true,
     ],
 ];

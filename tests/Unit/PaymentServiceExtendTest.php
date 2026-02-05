@@ -1,6 +1,5 @@
 <?php
 
-use App\Models\Invoice;
 use App\Models\Subscription;
 use App\Models\Tier;
 use App\Models\User;

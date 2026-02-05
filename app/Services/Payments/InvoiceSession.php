@@ -7,6 +7,5 @@ class InvoiceSession
     public function __construct(
         public readonly string $address,
         public readonly string $reference
-    ) {
-    }
+    ) {}
 }

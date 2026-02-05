@@ -16,9 +16,7 @@ use Illuminate\Validation\ValidationException;
 
 class PaymentService
 {
-    public function __construct(private PaymentGateway $gateway)
-    {
-    }
+    public function __construct(private PaymentGateway $gateway) {}
 
     public function createSubscriptionInvoice(User $payer, Tier $tier, string $billing = 'monthly'): Invoice
     {
@@ -148,7 +146,7 @@ class PaymentService
         $invoice = Invoice::query()->where('payment_reference', $reference)->first();
 
         if (! $invoice) {
-            throw (new ModelNotFoundException())->setModel(Invoice::class);
+            throw (new ModelNotFoundException)->setModel(Invoice::class);
         }
 
         if ($invoice->status === 'paid') {

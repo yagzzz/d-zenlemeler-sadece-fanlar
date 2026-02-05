@@ -1,1 +1,308 @@
 import './bootstrap';
+
+const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+const toastRoot = document.getElementById('toast-root');
+
+const ctaLabels = (() => {
+	const node = document.getElementById('cta-labels');
+	if (!node) return {};
+	try {
+		return JSON.parse(node.textContent || '{}');
+	} catch {
+		return {};
+	}
+})();
+
+const uiEnabled = document.body.dataset.uiEnabled === '1';
+
+const showToast = (message, type = 'info') => {
+	if (!toastRoot) return;
+	const el = document.createElement('div');
+	el.className = `rounded-2xl px-4 py-3 text-sm shadow-lg ${type === 'error' ? 'bg-rose-500' : 'bg-emerald-500'} text-white`;
+	el.textContent = message;
+	toastRoot.appendChild(el);
+	setTimeout(() => el.remove(), 3000);
+};
+
+const fetchJson = async (url, options = {}) => {
+	const response = await fetch(url, {
+		headers: {
+			'Content-Type': 'application/json',
+			'X-CSRF-TOKEN': csrfToken || '',
+			...(options.headers || {}),
+		},
+		credentials: 'same-origin',
+		...options,
+	});
+
+	if (!response.ok) {
+		throw new Error(`Request failed: ${response.status}`);
+	}
+
+	return response.json();
+};
+
+const renderContentCard = (item) => {
+	const template = document.getElementById('content-card-template');
+	if (!template) return null;
+	const node = template.content.cloneNode(true);
+	const card = node.querySelector('.content-card');
+	const lockedOverlay = node.querySelector('.locked-overlay');
+	const badge = node.querySelector('.content-badge');
+	const body = node.querySelector('.content-body');
+	const ctaButton = node.querySelector('.cta-button');
+	const tips = node.querySelector('.tips-summary');
+
+	card.dataset.contentId = item.id;
+	card.querySelector('.content-title').textContent = item.title;
+	card.querySelector('.content-visibility').textContent = item.visibility.replace('_', ' ');
+
+	if (item.locked) {
+		lockedOverlay?.classList.remove('hidden');
+		badge?.classList.remove('hidden');
+		body.textContent = 'Bu içerik kilitli. Kilidi açmak için harekete geç.';
+		const reason = item.lock_reason || 'subscription_required';
+		const label = ctaLabels[reason] || 'Tier’leri Gör';
+		ctaButton.textContent = label;
+		ctaButton.classList.remove('hidden');
+		ctaButton.dataset.reason = reason;
+		ctaButton.dataset.creator = item.creator_username || '';
+		ctaButton.dataset.contentId = item.id;
+	} else {
+		body.textContent = item.body || '';
+		if (item.tip_cta) {
+			ctaButton.textContent = 'Tip';
+			ctaButton.classList.remove('hidden');
+			ctaButton.dataset.reason = 'tip';
+			ctaButton.dataset.creator = item.creator_username || '';
+			ctaButton.dataset.contentId = item.id;
+		}
+	}
+
+	tips.textContent = `Tips ${item.tips?.count ?? 0}`;
+
+	return node;
+};
+
+const setupTierModal = () => {
+	const modal = document.getElementById('tier-modal');
+	if (!modal) return null;
+	const closeButtons = modal.querySelectorAll('[data-tier-close]');
+	closeButtons.forEach((btn) => btn.addEventListener('click', () => modal.classList.add('hidden')));
+	return modal;
+};
+
+const setupPaymentModal = () => {
+	const modal = document.getElementById('payment-modal');
+	if (!modal) return null;
+	const closeButtons = modal.querySelectorAll('[data-payment-close]');
+	closeButtons.forEach((btn) => btn.addEventListener('click', () => modal.classList.add('hidden')));
+	modal.querySelector('#payment-close-success')?.addEventListener('click', () => modal.classList.add('hidden'));
+	return modal;
+};
+
+const openTierModal = async (username) => {
+	const modal = setupTierModal();
+	if (!modal || !username) return;
+	modal.classList.remove('hidden');
+
+	const list = modal.querySelector('#tier-compare-list');
+	if (!list) return;
+	list.innerHTML = '<div class="skeleton-card"></div>';
+
+	try {
+		const payload = await fetchJson(`/api/creators/${username}/tiers/compare`);
+		list.innerHTML = '';
+		payload.tiers.forEach((tier) => {
+			const card = document.createElement('div');
+			card.className = 'rounded-2xl border border-white/10 p-4 bg-white/5';
+			card.innerHTML = `
+				<div class="flex items-center justify-between">
+					<div>
+						<p class="text-sm font-semibold">${tier.name}</p>
+						<p class="text-xs text-slate-400">${tier.description || ''}</p>
+					</div>
+					${tier.badges?.length ? `<span class="text-xs text-amber-300">${tier.badges[0]}</span>` : ''}
+				</div>
+				<div class="mt-3 text-sm">${tier.price.monthly_atomic} XMR (aylık)</div>
+				<button class="mt-3 w-full rounded-xl bg-white text-slate-900 py-2 text-xs font-semibold" data-tier-id="${tier.id}" data-creator="${username}">Seç</button>
+			`;
+			list.appendChild(card);
+		});
+	} catch (error) {
+		list.innerHTML = '<p class="text-sm text-rose-300">Tier bilgisi yüklenemedi.</p>';
+	}
+};
+
+const openPaymentModal = ({ summary, invoiceAction }) => {
+	const modal = setupPaymentModal();
+	if (!modal) return;
+	modal.classList.remove('hidden');
+
+	const summaryEl = modal.querySelector('#payment-summary');
+	const stepSummary = modal.querySelector('[data-step="summary"]');
+	const stepWaiting = modal.querySelector('[data-step="waiting"]');
+	const stepSuccess = modal.querySelector('[data-step="success"]');
+
+	summaryEl.textContent = summary;
+	stepSummary.classList.remove('hidden');
+	stepWaiting.classList.add('hidden');
+	stepSuccess.classList.add('hidden');
+
+	modal.querySelector('#payment-start')?.addEventListener('click', async () => {
+		try {
+			const invoice = await invoiceAction();
+			stepSummary.classList.add('hidden');
+			stepWaiting.classList.remove('hidden');
+			modal.querySelector('#payment-address').textContent = invoice.address;
+			modal.querySelector('#payment-amount').textContent = `${invoice.amount_atomic} XMR`;
+			modal.querySelector('#payment-invoice').textContent = invoice.invoice_id;
+			await pollVerify(invoice.invoice_id);
+			stepWaiting.classList.add('hidden');
+			stepSuccess.classList.remove('hidden');
+		} catch (error) {
+			showToast('Ödeme oluşturulamadı', 'error');
+		}
+	}, { once: true });
+};
+
+const pollVerify = async (invoiceId) => {
+	const statusEl = document.getElementById('payment-status');
+	let attempts = 0;
+	return new Promise((resolve, reject) => {
+		const timer = setInterval(async () => {
+			attempts += 1;
+			try {
+				const result = await fetchJson(`/api/invoices/${invoiceId}/verify`, { method: 'POST' });
+				statusEl.textContent = result.status === 'paid' ? 'Başarılı' : 'Bekleniyor…';
+				if (result.status === 'paid') {
+					clearInterval(timer);
+					resolve(result);
+				}
+				if (attempts >= 20) {
+					clearInterval(timer);
+					reject();
+				}
+			} catch {
+				clearInterval(timer);
+				reject();
+			}
+		}, 3000);
+	});
+};
+
+const setupFeed = async () => {
+	if (!uiEnabled) return;
+	const feedRoot = document.querySelector('[data-page="feed"]');
+	if (!feedRoot) return;
+	const endpoint = feedRoot.dataset.feedEndpoint;
+	const skeleton = document.getElementById('feed-skeleton');
+	const list = document.getElementById('feed-list');
+
+	try {
+		const payload = await fetchJson(endpoint);
+		skeleton?.remove();
+		payload.data.forEach((item) => {
+			const node = renderContentCard(item);
+			if (node) list?.appendChild(node);
+		});
+	} catch {
+		showToast('Feed yüklenemedi', 'error');
+	}
+};
+
+const setupCreatorPage = async () => {
+	if (!uiEnabled) return;
+	const page = document.querySelector('[data-page="creator"]');
+	if (!page) return;
+	const profileEndpoint = page.dataset.profileEndpoint;
+	const contentsEndpoint = page.dataset.contentsEndpoint;
+	const username = page.dataset.username;
+
+	try {
+		const profile = await fetchJson(profileEndpoint);
+		document.getElementById('creator-name').textContent = profile.creator?.display_name || username;
+		document.getElementById('creator-tagline').textContent = profile.profile?.tagline || 'Premium içerikler burada.';
+	} catch {
+		showToast('Profil yüklenemedi', 'error');
+	}
+
+	try {
+		const contents = await fetchJson(contentsEndpoint);
+		const list = document.getElementById('creator-contents');
+		contents.data.forEach((item) => {
+			const node = renderContentCard(item);
+			if (node) list?.appendChild(node);
+		});
+	} catch {
+		showToast('İçerik yüklenemedi', 'error');
+	}
+
+	document.getElementById('subscribe-cta')?.addEventListener('click', () => openTierModal(username));
+	document.getElementById('tip-cta')?.addEventListener('click', () => openPaymentModal({
+		summary: 'Tip gönder',
+		invoiceAction: () => fetchJson(`/api/creators/${username}/tips/invoice`, {
+			method: 'POST',
+			body: JSON.stringify({ amount_atomic: 2000 }),
+		}),
+	}));
+};
+
+const setupGlobalActions = () => {
+	document.body.addEventListener('click', async (event) => {
+		const target = event.target;
+		if (!(target instanceof HTMLElement)) return;
+		if (target.matches('.cta-button')) {
+			const reason = target.dataset.reason;
+			const creator = target.dataset.creator;
+			const contentId = target.dataset.contentId;
+
+			if (reason === 'tier_required' || reason === 'subscription_required') {
+				if (!creator) return showToast('Creator bulunamadı', 'error');
+				return openTierModal(creator);
+			}
+
+			if (reason === 'ppv_required') {
+				return openPaymentModal({
+					summary: 'PPV içerik satın al',
+					invoiceAction: () => fetchJson('/payments/ppv/invoice', {
+						method: 'POST',
+						body: JSON.stringify({ content_id: Number(contentId) }),
+					}),
+				});
+			}
+
+			if (reason === 'not_logged_in' || reason === 'not_verified') {
+				return showToast('Devam etmek için giriş yapın', 'error');
+			}
+
+			if (reason === 'tip') {
+				if (!creator) return;
+				return openPaymentModal({
+					summary: 'Tip gönder',
+					invoiceAction: () => fetchJson(`/api/creators/${creator}/tips/invoice`, {
+						method: 'POST',
+						body: JSON.stringify({ amount_atomic: 2000, content_id: Number(contentId) }),
+					}),
+				});
+			}
+		}
+
+		if (target.matches('[data-tier-id]')) {
+			const tierId = target.getAttribute('data-tier-id');
+			const creator = target.getAttribute('data-creator');
+			if (!tierId || !creator) return;
+			openPaymentModal({
+				summary: `Tier ${tierId} için abonelik`,
+				invoiceAction: () => fetchJson(`/api/creators/${creator}/subscribe/invoice`, {
+					method: 'POST',
+					body: JSON.stringify({ tier_id: tierId, billing: 'monthly' }),
+				}),
+			});
+		}
+	});
+};
+
+setupFeed();
+setupCreatorPage();
+setupGlobalActions();

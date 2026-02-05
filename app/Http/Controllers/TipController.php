@@ -15,7 +15,7 @@ class TipController extends Controller
     public function createCreatorTipInvoice(string $username, Request $request, PaymentService $paymentService)
     {
         $data = $request->validate([
-            'amount_atomic' => ['required', 'integer', 'min:' . config('tips.min_atomic')],
+            'amount_atomic' => ['required', 'integer', 'min:'.config('tips.min_atomic')],
             'message' => ['nullable', 'string', 'max:280'],
             'is_anonymous' => ['nullable', 'boolean'],
             'content_id' => ['nullable', 'integer', 'exists:contents,id'],

@@ -9,9 +9,7 @@ use App\Services\AccessEngine\AccessRequest;
 
 class ContentPresenter
 {
-    public function __construct(private AccessEngine $accessEngine)
-    {
-    }
+    public function __construct(private AccessEngine $accessEngine) {}
 
     public function present(Content $content, ?User $user): array
     {
@@ -23,6 +21,7 @@ class ContentPresenter
         return [
             'id' => $content->id,
             'creator_id' => $content->creator_id,
+            'creator_username' => $content->creator?->username,
             'title' => $content->title,
             'body' => $decision->granted ? $content->body : null,
             'visibility' => $content->visibility,

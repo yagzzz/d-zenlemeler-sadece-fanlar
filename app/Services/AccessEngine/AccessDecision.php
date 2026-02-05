@@ -8,6 +8,5 @@ class AccessDecision
         public readonly bool $granted,
         public readonly ?string $reason = null,
         public readonly ?array $tierHint = null
-    ) {
-    }
+    ) {}
 }

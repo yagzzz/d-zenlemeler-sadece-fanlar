@@ -6,9 +6,7 @@ use Illuminate\Support\Str;
 
 class MockMoneroGateway implements PaymentGateway
 {
-    public function __construct(private MockPaymentSimulator $simulator)
-    {
-    }
+    public function __construct(private MockPaymentSimulator $simulator) {}
 
     public function createInvoice(int $amountAtomic, string $currency, \DateTimeInterface $expiresAt, array $metadata): InvoiceSession
     {

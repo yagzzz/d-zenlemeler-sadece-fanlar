@@ -1,6 +1,6 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Admin\CreatorApplicationController as AdminCreatorApplicationController;
 use App\Http\Controllers\CreatorApplicationController;
 use App\Http\Controllers\CreatorContentController;
 use App\Http\Controllers\CreatorContentsController;
@@ -15,14 +15,18 @@ use App\Http\Controllers\PublicCreatorTierCompareController;
 use App\Http\Controllers\PublicCreatorTiersController;
 use App\Http\Controllers\SubscriptionTierController;
 use App\Http\Controllers\TipController;
-use App\Http\Controllers\Admin\CreatorApplicationController as AdminCreatorApplicationController;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return view('welcome');
+    return view('feed.index');
 });
 
 Route::get('/health', function () {
     return response()->json(['status' => 'ok']);
+});
+
+Route::get('/c/{username}', function (string $username) {
+    return view('creator.show', ['username' => $username]);
 });
 
 Route::middleware(['auth', 'feature:creator_applications'])

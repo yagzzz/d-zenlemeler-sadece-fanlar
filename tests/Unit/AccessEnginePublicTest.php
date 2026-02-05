@@ -8,7 +8,7 @@ uses(Tests\TestCase::class);
 it('grants access for public visibility', function () {
     config()->set('features.flags.access_engine', true);
 
-    $engine = new DefaultAccessEngine();
+    $engine = new DefaultAccessEngine;
     $decision = $engine->decide(new AccessRequest(null, 'public'));
 
     expect($decision->granted)->toBeTrue();
