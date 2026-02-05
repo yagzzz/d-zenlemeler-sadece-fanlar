@@ -14,6 +14,7 @@ const ctaLabels = (() => {
 })();
 
 const uiEnabled = document.body.dataset.uiEnabled === '1';
+const uiPolishEnabled = document.body.dataset.uiPolishEnabled === '1';
 
 const showToast = (message, type = 'info') => {
 	if (!toastRoot) return;
@@ -101,6 +102,14 @@ const setupPaymentModal = () => {
 	return modal;
 };
 
+const setupTipModal = () => {
+	const modal = document.getElementById('tip-modal');
+	if (!modal) return null;
+	const closeButtons = modal.querySelectorAll('[data-tip-close]');
+	closeButtons.forEach((btn) => btn.addEventListener('click', () => modal.classList.add('hidden')));
+	return modal;
+};
+
 const openTierModal = async (username) => {
 	const modal = setupTierModal();
 	if (!modal || !username) return;
@@ -166,6 +175,42 @@ const openPaymentModal = ({ summary, invoiceAction }) => {
 	}, { once: true });
 };
 
+const openPaymentModalWithInvoice = async (invoice) => {
+	const modal = setupPaymentModal();
+	if (!modal) return;
+	modal.classList.remove('hidden');
+
+	const stepSummary = modal.querySelector('[data-step="summary"]');
+	const stepWaiting = modal.querySelector('[data-step="waiting"]');
+	const stepSuccess = modal.querySelector('[data-step="success"]');
+
+	stepSummary.classList.add('hidden');
+	stepWaiting.classList.remove('hidden');
+	stepSuccess.classList.add('hidden');
+
+	modal.querySelector('#payment-address').textContent = invoice.address;
+	modal.querySelector('#payment-amount').textContent = `${invoice.amount_atomic} XMR`;
+	modal.querySelector('#payment-invoice').textContent = invoice.invoice_id;
+
+	try {
+		await pollVerify(invoice.invoice_id);
+		stepWaiting.classList.add('hidden');
+		stepSuccess.classList.remove('hidden');
+	} catch (error) {
+		showToast('Ödeme doğrulanamadı', 'error');
+		throw error;
+	}
+};
+
+const openTipModal = ({ creator, contentId }) => {
+	if (!uiPolishEnabled) return;
+	const modal = setupTipModal();
+	if (!modal || !creator) return;
+	modal.classList.remove('hidden');
+	modal.dataset.creator = creator;
+	modal.dataset.contentId = contentId || '';
+};
+
 const pollVerify = async (invoiceId) => {
 	const statusEl = document.getElementById('payment-status');
 	let attempts = 0;
@@ -217,6 +262,8 @@ const setupCreatorPage = async () => {
 	if (!page) return;
 	const profileEndpoint = page.dataset.profileEndpoint;
 	const contentsEndpoint = page.dataset.contentsEndpoint;
+	const tiersEndpoint = page.dataset.tiersEndpoint;
+	const analyticsEndpoint = page.dataset.analyticsEndpoint;
 	const username = page.dataset.username;
 
 	try {
@@ -238,14 +285,39 @@ const setupCreatorPage = async () => {
 		showToast('İçerik yüklenemedi', 'error');
 	}
 
+	if (uiPolishEnabled && tiersEndpoint) {
+		try {
+			const tiers = await fetchJson(tiersEndpoint);
+			const list = document.getElementById('creator-tiers');
+			tiers.data.forEach((tier) => {
+				const card = document.createElement('div');
+				card.className = 'rounded-2xl border border-white/10 bg-white/5 p-4';
+				card.innerHTML = `
+					<p class="text-sm font-semibold">${tier.name}</p>
+					<p class="text-xs text-slate-400">${tier.description || ''}</p>
+					<p class="mt-2 text-sm">${tier.price_atomic} ${tier.currency}</p>
+				`;
+				list?.appendChild(card);
+			});
+		} catch {
+			showToast('Tier listesi yüklenemedi', 'error');
+		}
+	}
+
+	if (uiPolishEnabled && analyticsEndpoint) {
+		try {
+			const analytics = await fetchJson(analyticsEndpoint);
+			document.getElementById('creator-tips-total').textContent = `${analytics.tips_total_atomic} XMR`;
+			document.getElementById('creator-tips-count').textContent = `${analytics.tips_count} tip`;
+			document.getElementById('creator-subscribers').textContent = `${analytics.active_subscribers}`;
+		} catch {
+			showToast('Analitik yüklenemedi', 'error');
+		}
+	}
+
 	document.getElementById('subscribe-cta')?.addEventListener('click', () => openTierModal(username));
-	document.getElementById('tip-cta')?.addEventListener('click', () => openPaymentModal({
-		summary: 'Tip gönder',
-		invoiceAction: () => fetchJson(`/api/creators/${username}/tips/invoice`, {
-			method: 'POST',
-			body: JSON.stringify({ amount_atomic: 2000 }),
-		}),
-	}));
+	document.getElementById('compare-tiers')?.addEventListener('click', () => openTierModal(username));
+	document.getElementById('tip-cta')?.addEventListener('click', () => openTipModal({ creator: username }));
 };
 
 const setupGlobalActions = () => {
@@ -278,13 +350,7 @@ const setupGlobalActions = () => {
 
 			if (reason === 'tip') {
 				if (!creator) return;
-				return openPaymentModal({
-					summary: 'Tip gönder',
-					invoiceAction: () => fetchJson(`/api/creators/${creator}/tips/invoice`, {
-						method: 'POST',
-						body: JSON.stringify({ amount_atomic: 2000, content_id: Number(contentId) }),
-					}),
-				});
+				return openTipModal({ creator, contentId: Number(contentId) });
 			}
 		}
 
@@ -303,6 +369,44 @@ const setupGlobalActions = () => {
 	});
 };
 
+const setupTipForm = () => {
+	if (!uiPolishEnabled) return;
+	const modal = setupTipModal();
+	if (!modal) return;
+	const form = document.getElementById('tip-form');
+	if (!form) return;
+
+	form.addEventListener('submit', async (event) => {
+		event.preventDefault();
+		const creator = modal.dataset.creator;
+		const contentId = modal.dataset.contentId;
+		const amount = Number(document.getElementById('tip-amount')?.value || 0);
+		const message = document.getElementById('tip-message')?.value || null;
+
+		if (!creator || amount <= 0) {
+			showToast('Tip bilgisi eksik', 'error');
+			return;
+		}
+
+		try {
+			const invoice = await fetchJson(`/api/creators/${creator}/tips/invoice`, {
+				method: 'POST',
+				body: JSON.stringify({
+					amount_atomic: amount,
+					message,
+					content_id: contentId ? Number(contentId) : null,
+				}),
+			});
+			modal.classList.add('hidden');
+			await openPaymentModalWithInvoice(invoice);
+			showToast('Tip doğrulandı');
+		} catch {
+			showToast('Tip oluşturulamadı', 'error');
+		}
+	});
+};
+
 setupFeed();
 setupCreatorPage();
 setupGlobalActions();
+setupTipForm();

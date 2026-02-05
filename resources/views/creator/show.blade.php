@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="mx-auto max-w-4xl px-6 py-8" data-page="creator" data-username="{{ $username }}" data-profile-endpoint="/api/creators/{{ $username }}/profile" data-contents-endpoint="/creators/{{ $username }}/contents">
+<div class="mx-auto max-w-4xl px-6 py-8" data-page="creator" data-username="{{ $username }}" data-profile-endpoint="/api/creators/{{ $username }}/profile" data-contents-endpoint="/creators/{{ $username }}/contents" data-tiers-endpoint="{{ config('features.flags.tiers') ? '/creators/'.$username.'/tiers' : '' }}" data-analytics-endpoint="{{ config('features.flags.analytics_stub') ? '/api/creators/'.$username.'/analytics' : '' }}">
     @if (!config('features.flags.ui'))
         <div class="rounded-3xl border border-white/10 bg-white/5 p-6">
             <p class="text-lg font-semibold">Feature disabled</p>
@@ -24,6 +24,33 @@
                     <button id="tip-cta" class="flex-1 rounded-2xl border border-white/20 py-3 text-sm font-semibold">Tip gönder</button>
                 </div>
             </div>
+        </div>
+
+        <div class="mt-8">
+            <div class="grid gap-4 md:grid-cols-3">
+                <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
+                    <p class="text-xs uppercase tracking-widest text-slate-400">Tips</p>
+                    <p id="creator-tips-total" class="mt-2 text-lg font-semibold">0 XMR</p>
+                    <p id="creator-tips-count" class="text-xs text-slate-500">0 tip</p>
+                </div>
+                <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
+                    <p class="text-xs uppercase tracking-widest text-slate-400">Subscribers</p>
+                    <p id="creator-subscribers" class="mt-2 text-lg font-semibold">0</p>
+                    <p class="text-xs text-slate-500">Active</p>
+                </div>
+                <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
+                    <p class="text-xs uppercase tracking-widest text-slate-400">Tierler</p>
+                    <p class="mt-2 text-sm text-slate-300">Aşağıdan planları incele</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-8">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-semibold">Tier’ler</h2>
+                <button id="compare-tiers" class="text-xs text-slate-400">Karşılaştır</button>
+            </div>
+            <div id="creator-tiers" class="grid gap-4 md:grid-cols-2"></div>
         </div>
 
         <div class="mt-8">

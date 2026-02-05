@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\CreatorApplicationController as AdminCreatorApplicationController;
 use App\Http\Controllers\ContentController;
+use App\Http\Controllers\CreatorAnalyticsController;
 use App\Http\Controllers\CreatorApplicationController;
 use App\Http\Controllers\CreatorContentController;
 use App\Http\Controllers\CreatorContentsController;
@@ -126,4 +127,10 @@ Route::prefix('api')
     ->group(function () {
         Route::get('/contents/{content}', [ContentController::class, 'show'])
             ->middleware('content.access');
+    });
+
+Route::prefix('api')
+    ->middleware(['feature:analytics_stub'])
+    ->group(function () {
+        Route::get('/creators/{username}/analytics', [CreatorAnalyticsController::class, 'show']);
     });

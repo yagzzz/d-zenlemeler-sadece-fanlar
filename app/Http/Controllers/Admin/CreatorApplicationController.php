@@ -9,10 +9,16 @@ use Illuminate\Http\Request;
 
 class CreatorApplicationController extends Controller
 {
-    public function index(CreatorApplicationService $service)
+    public function index(CreatorApplicationService $service, Request $request)
     {
+        $pending = $service->listPending();
+
+        if (! $request->expectsJson()) {
+            return view('admin.creator-applications.index', ['applications' => $pending]);
+        }
+
         return response()->json([
-            'data' => $service->listPending(),
+            'data' => $pending,
         ]);
     }
 

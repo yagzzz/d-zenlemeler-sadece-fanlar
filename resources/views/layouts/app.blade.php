@@ -12,7 +12,7 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     @endif
 </head>
-<body class="min-h-screen bg-slate-950 text-slate-100 antialiased" data-ui-enabled="{{ config('features.flags.ui') ? '1' : '0' }}">
+<body class="min-h-screen bg-slate-950 text-slate-100 antialiased" data-ui-enabled="{{ config('features.flags.ui') ? '1' : '0' }}" data-ui-polish-enabled="{{ config('features.flags.ui_polish') ? '1' : '0' }}">
     <div class="min-h-screen pb-24">
         @yield('content')
     </div>
@@ -46,5 +46,6 @@
 
     @include('components.tier-modal')
     @include('components.payment-modal')
+    @include('components.tip-modal')
 </body>
 </html>

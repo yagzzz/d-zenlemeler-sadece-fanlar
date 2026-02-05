@@ -3,6 +3,7 @@
 return [
     'flags' => [
         'access_engine' => false,
+        'analytics_stub' => false,
         'creator_applications' => false,
         'content_core' => false,
         'content_show' => false,
@@ -17,5 +18,6 @@ return [
         'tier_ux' => false,
         'tips' => false,
         'ui' => true,
+        'ui_polish' => false,
     ],
 ];
