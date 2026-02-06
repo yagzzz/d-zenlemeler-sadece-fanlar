@@ -120,6 +120,20 @@ class SettingsSeeder extends Seeder
                 'group'       => 'features',
                 'description' => 'Yorum sistemi',
             ],
+            [
+                'key'         => 'payments_demo_mode',
+                'value'       => '1',
+                'type'        => 'boolean',
+                'group'       => 'features',
+                'description' => 'Ödeme demo modu (faturalar otomatik onaylanır)',
+            ],
+            [
+                'key'         => 'footer_text',
+                'value'       => '© 2025 Sadece Fanlar. Tüm hakları saklıdır.',
+                'type'        => 'string',
+                'group'       => 'general',
+                'description' => 'Footer metni',
+            ],
         ];
 
         foreach ($settings as $setting) {

@@ -23,9 +23,9 @@
             <p id="creator-tagline" class="text-muted mb-3" style="font-size:0.875rem;">Premium içerikler burada.</p>
 
             {{-- Action Buttons --}}
-            <div class="d-flex gap-3 mb-4">
-                <button id="subscribe-cta" class="btn btn-primary" style="flex:1;padding:0.75rem;">Abone Ol</button>
-                <button id="tip-cta" class="btn btn-outline" style="flex:1;padding:0.75rem;">💎 Tip Gönder</button>
+            <div class="d-flex gap-3 mb-4" style="justify-content:center;">
+                <button id="subscribe-cta" class="btn btn-primary" style="flex:1;max-width:200px;padding:0.75rem;">Abone Ol</button>
+                <button id="tip-cta" class="btn btn-outline" style="flex:1;max-width:200px;padding:0.75rem;">💎 Tip Gönder</button>
             </div>
 
             {{-- Stats --}}

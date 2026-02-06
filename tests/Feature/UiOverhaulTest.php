@@ -68,11 +68,11 @@ it('explore page has search input', function () {
         ->assertSee('Creator veya içerik ara', false);
 });
 
-it('explore page has category buttons', function () {
+it('explore page has filter buttons', function () {
     $this->get('/explore')
         ->assertOk()
-        ->assertSee('explore-categories', false)
-        ->assertSee('Müzik');
+        ->assertSee('explore-filters', false)
+        ->assertSee('Trend');
 });
 
 it('explore page shows seeded creators', function () {
@@ -125,12 +125,12 @@ it('create page has visibility options', function () {
    Inbox Page
    ═══════════════════════════════════════════════════════════════════════ */
 
-it('inbox page shows thread list', function () {
+it('inbox page shows thread list container', function () {
     $user = User::factory()->create();
     $this->actingAs($user)->get('/inbox')
         ->assertOk()
         ->assertSee('inbox-threads', false)
-        ->assertSee('Destek Ekibi');
+        ->assertSee('Mesajlar');
 });
 
 /* ═══════════════════════════════════════════════════════════════════════

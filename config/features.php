@@ -37,5 +37,6 @@ return [
         'reactions'            => env('FEATURES_REACTIONS', $local),
         'bookmarks'            => env('FEATURES_BOOKMARKS', $local),
         'notifications'        => env('FEATURES_NOTIFICATIONS', $local),
+        'messaging'            => env('FEATURES_MESSAGING', $local),
     ],
 ];

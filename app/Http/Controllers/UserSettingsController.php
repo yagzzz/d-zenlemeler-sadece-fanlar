@@ -38,15 +38,24 @@ class UserSettingsController extends Controller
 
         $current = $user->getNotificationPreferencesWithDefaults();
 
-        $incoming = $request->only(array_keys(User::DEFAULT_NOTIFICATION_PREFERENCES));
+        // For JSON requests (API), only update keys that are explicitly sent.
+        // For form submissions, treat missing keys as unchecked (false).
+        $updated = [];
+        foreach (array_keys(User::DEFAULT_NOTIFICATION_PREFERENCES) as $key) {
+            if ($request->has($key)) {
+                $updated[$key] = (bool) $request->input($key);
+            } elseif (!$request->isJson()) {
+                $updated[$key] = false;
+            }
+        }
 
-        $merged = array_merge($current, $incoming);
+        $merged = array_merge($current, $updated);
 
         $user->update(['notification_preferences' => $merged]);
 
         return response()->json([
             'message' => 'Bildirim tercihleri güncellendi.',
-            'preferences' => $user->getNotificationPreferencesWithDefaults(),
+            'preferences' => $user->fresh()->getNotificationPreferencesWithDefaults(),
         ]);
     }
 }

@@ -21,7 +21,10 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Run settings seeder first
+        // Run admin seeder first
+        $this->call(AdminSeeder::class);
+
+        // Run settings seeder
         $this->call(SettingsSeeder::class);
 
         // Default test user

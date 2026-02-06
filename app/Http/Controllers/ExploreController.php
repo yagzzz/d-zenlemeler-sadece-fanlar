@@ -11,6 +11,7 @@ class ExploreController extends Controller
     public function index(Request $request)
     {
         $query = $request->query('q');
+        $filter = $request->query('filter', 'trending'); // trending, latest, creators
 
         $creatorsQuery = User::where('role', 'creator')
             ->whereNotNull('creator_approved_at')
@@ -27,8 +28,7 @@ class ExploreController extends Controller
 
         $contentsQuery = Content::where('is_published', true)
             ->where('visibility', 'public')
-            ->with('creator')
-            ->latest('published_at');
+            ->with('creator');
 
         if ($query) {
             $contentsQuery->where(function ($q) use ($query) {
@@ -37,7 +37,18 @@ class ExploreController extends Controller
             });
         }
 
-        $contents = $contentsQuery->take(8)->get();
+        // Add counts for trending scoring
+        $contentsQuery->withCount(['reactions', 'comments', 'bookmarks']);
+
+        if ($filter === 'latest') {
+            $contentsQuery->latest('published_at');
+        } else {
+            // Trending: score = reactions + comments + bookmarks
+            $contentsQuery->orderByRaw('(reactions_count + comments_count + bookmarks_count) DESC')
+                ->latest('published_at');
+        }
+
+        $contents = $contentsQuery->take(20)->get();
 
         if ($request->expectsJson()) {
             return response()->json([
@@ -53,10 +64,15 @@ class ExploreController extends Controller
                     'body' => \Illuminate\Support\Str::limit($c->body, 100),
                     'creator_name' => $c->creator?->name,
                     'creator_username' => $c->creator?->username,
+                    'reactions_count' => $c->reactions_count,
+                    'comments_count' => $c->comments_count,
+                    'bookmarks_count' => $c->bookmarks_count,
+                    'trending_score' => $c->reactions_count + $c->comments_count + $c->bookmarks_count,
                 ]),
+                'filter' => $filter,
             ]);
         }
 
-        return view('pages.explore', compact('creators', 'contents'));
+        return view('pages.explore', compact('creators', 'contents', 'filter'));
     }
 }

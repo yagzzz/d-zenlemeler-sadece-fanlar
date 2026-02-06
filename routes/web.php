@@ -3,6 +3,7 @@
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\Admin\AdminContentController;
 use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Admin\AdminInvoiceController;
 use App\Http\Controllers\Admin\AdminReportController;
 use App\Http\Controllers\Admin\AdminSettingsController;
 use App\Http\Controllers\Admin\AdminUserController;
@@ -21,6 +22,7 @@ use App\Http\Controllers\CreatorProfileController;
 use App\Http\Controllers\CreatorTierController;
 use App\Http\Controllers\DraftController;
 use App\Http\Controllers\ExploreController;
+use App\Http\Controllers\InboxController;
 use App\Http\Controllers\FeedController;
 use App\Http\Controllers\MediaController;
 use App\Http\Controllers\NotificationController;
@@ -145,6 +147,11 @@ Route::prefix('admin')
             Route::post('/creator-applications/{application}/approve', [AdminCreatorApplicationController::class, 'approve']);
             Route::post('/creator-applications/{application}/reject', [AdminCreatorApplicationController::class, 'reject']);
         });
+
+        // Invoice / Finance management
+        Route::get('/invoices', [AdminInvoiceController::class, 'index']);
+        Route::post('/invoices/{invoice}/mark-paid', [AdminInvoiceController::class, 'markPaid']);
+        Route::post('/invoices/{invoice}/mark-failed', [AdminInvoiceController::class, 'markFailed']);
     });
 
 Route::prefix('creator')
@@ -281,4 +288,13 @@ Route::prefix('api')
     ->middleware(['auth', 'feature:content_core'])
     ->group(function () {
         Route::post('/contents/{content}/draft', [DraftController::class, 'save']);
+    });
+
+/* ── Messaging / Inbox ───────────────────────────────────────────────── */
+Route::prefix('api')
+    ->middleware(['auth'])
+    ->group(function () {
+        Route::get('/inbox', [InboxController::class, 'index']);
+        Route::get('/inbox/{conversation}', [InboxController::class, 'show']);
+        Route::post('/inbox/{user}/send', [InboxController::class, 'send']);
     });

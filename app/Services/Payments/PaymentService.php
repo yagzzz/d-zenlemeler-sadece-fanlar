@@ -165,6 +165,18 @@ class PaymentService
 
         $status = $this->gateway->verify($reference);
 
+        // Demo mode: auto-mark as paid if enabled
+        $demoMode = false;
+        try {
+            $demoMode = (bool) settings('payments_demo_mode', false);
+        } catch (\Throwable) {
+            // settings() may not be available in all contexts
+        }
+
+        if ($demoMode && (! $status->paid || $status->paidAmountAtomic < $invoice->amount_atomic)) {
+            $status = new PaymentStatus(true, $invoice->amount_atomic);
+        }
+
         if (! $status->paid || $status->paidAmountAtomic < $invoice->amount_atomic) {
             return $this->buildStatusResponse('pending');
         }

@@ -73,6 +73,7 @@
             <a href="/admin/users" class="{{ str_starts_with($currentPath, 'admin/users') ? 'active' : '' }}">👥 Kullanıcılar</a>
             <a href="/admin/contents" class="{{ str_starts_with($currentPath, 'admin/contents') ? 'active' : '' }}">📝 İçerikler</a>
             <a href="/admin/reports" class="{{ str_starts_with($currentPath, 'admin/reports') ? 'active' : '' }}">🚩 Raporlar</a>
+            <a href="/admin/invoices" class="{{ str_starts_with($currentPath, 'admin/invoices') ? 'active' : '' }}">💰 Faturalar</a>
             <a href="/admin/creator-applications" class="{{ str_starts_with($currentPath, 'admin/creator-applications') ? 'active' : '' }}">🎨 Creator Başvuruları</a>
             <hr style="border-color:#333; margin:1rem 0;">
             <a href="/">← Siteye Dön</a>
