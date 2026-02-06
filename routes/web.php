@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Admin\CreatorApplicationController as AdminCreatorApplicationController;
+use App\Http\Controllers\BookmarkController;
+use App\Http\Controllers\CommentController;
 use App\Http\Controllers\ContentController;
 use App\Http\Controllers\CreatorAnalyticsController;
 use App\Http\Controllers\CreatorApplicationController;
@@ -9,12 +11,15 @@ use App\Http\Controllers\CreatorContentsController;
 use App\Http\Controllers\CreatorMediaController;
 use App\Http\Controllers\CreatorProfileController;
 use App\Http\Controllers\CreatorTierController;
+use App\Http\Controllers\DraftController;
 use App\Http\Controllers\FeedController;
 use App\Http\Controllers\MediaController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PublicCreatorProfileController;
 use App\Http\Controllers\PublicCreatorTierCompareController;
 use App\Http\Controllers\PublicCreatorTiersController;
+use App\Http\Controllers\ReactionController;
 use App\Http\Controllers\SubscriptionTierController;
 use App\Http\Controllers\TipController;
 use Illuminate\Support\Facades\Route;
@@ -37,6 +42,14 @@ Route::get('/inbox', function () {
 
 Route::get('/profile', function () {
     return view('pages.profile');
+});
+
+Route::get('/notifications', function () {
+    return view('pages.notifications');
+});
+
+Route::get('/bookmarks', function () {
+    return view('pages.bookmarks');
 });
 
 Route::get('/health', function () {
@@ -149,4 +162,46 @@ Route::prefix('api')
     ->middleware(['feature:analytics_stub'])
     ->group(function () {
         Route::get('/creators/{username}/analytics', [CreatorAnalyticsController::class, 'show']);
+    });
+
+/* ── Comments ────────────────────────────────────────────────────────── */
+Route::prefix('api')
+    ->middleware(['feature:comments'])
+    ->group(function () {
+        Route::get('/contents/{content}/comments', [CommentController::class, 'index']);
+        Route::post('/contents/{content}/comments', [CommentController::class, 'store'])
+            ->middleware('auth');
+        Route::delete('/comments/{comment}', [CommentController::class, 'destroy'])
+            ->middleware('auth');
+    });
+
+/* ── Reactions ───────────────────────────────────────────────────────── */
+Route::prefix('api')
+    ->middleware(['auth', 'feature:reactions'])
+    ->group(function () {
+        Route::post('/reactions/toggle', [ReactionController::class, 'toggle']);
+    });
+
+/* ── Bookmarks ───────────────────────────────────────────────────────── */
+Route::prefix('api')
+    ->middleware(['auth', 'feature:bookmarks'])
+    ->group(function () {
+        Route::post('/bookmarks/toggle', [BookmarkController::class, 'toggle']);
+        Route::get('/bookmarks', [BookmarkController::class, 'index']);
+    });
+
+/* ── Notifications ───────────────────────────────────────────────────── */
+Route::prefix('api')
+    ->middleware(['auth', 'feature:notifications'])
+    ->group(function () {
+        Route::get('/notifications', [NotificationController::class, 'index']);
+        Route::post('/notifications/read', [NotificationController::class, 'markRead']);
+        Route::get('/notifications/unread-count', [NotificationController::class, 'unreadCount']);
+    });
+
+/* ── Drafts ──────────────────────────────────────────────────────────── */
+Route::prefix('api')
+    ->middleware(['auth', 'feature:content_core'])
+    ->group(function () {
+        Route::post('/contents/{content}/draft', [DraftController::class, 'save']);
     });

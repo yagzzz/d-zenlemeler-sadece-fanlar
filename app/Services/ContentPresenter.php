@@ -25,10 +25,16 @@ class ContentPresenter
         $locked = ! $decision->granted;
         $tipsAggregate = $this->buildTipsAggregate($content);
 
+        $reactionsCount = $content->reactions()->count();
+        $commentsCount = $content->comments()->count();
+        $userReacted = $user ? $content->reactions()->where('user_id', $user->id)->exists() : false;
+        $userBookmarked = $user ? $content->bookmarks()->where('user_id', $user->id)->exists() : false;
+
         return [
             'id' => $content->id,
             'creator_id' => $content->creator_id,
             'creator_username' => $content->creator?->username,
+            'creator_name' => $content->creator?->name,
             'title' => $content->title,
             'body' => $decision->granted ? $content->body : null,
             'visibility' => $content->visibility,
@@ -43,6 +49,10 @@ class ContentPresenter
                 'type' => 'tip',
                 'min_atomic' => (int) config('tips.min_atomic', 1000),
             ],
+            'reactions_count' => $reactionsCount,
+            'comments_count' => $commentsCount,
+            'user_reacted' => $userReacted,
+            'user_bookmarked' => $userBookmarked,
             'access' => [
                 'granted' => $decision->granted,
                 'reason' => $decision->reason,

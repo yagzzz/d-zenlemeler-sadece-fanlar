@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -59,5 +60,30 @@ class User extends Authenticatable
     public function creatorProfile(): HasOne
     {
         return $this->hasOne(CreatorProfile::class, 'user_id');
+    }
+
+    public function comments(): HasMany
+    {
+        return $this->hasMany(Comment::class);
+    }
+
+    public function bookmarks(): HasMany
+    {
+        return $this->hasMany(Bookmark::class);
+    }
+
+    public function reactions(): HasMany
+    {
+        return $this->hasMany(Reaction::class);
+    }
+
+    public function isCreator(): bool
+    {
+        return $this->role === 'creator' && $this->creator_approved_at !== null;
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
     }
 }

@@ -2,8 +2,11 @@
 
 namespace Database\Seeders;
 
+use App\Models\Bookmark;
+use App\Models\Comment;
 use App\Models\Content;
 use App\Models\CreatorProfile;
+use App\Models\Reaction;
 use App\Models\Tier;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -43,6 +46,18 @@ class DatabaseSeeder extends Seeder
                 'username' => 'elif',
                 'tagline' => 'Müzik prodüksiyon ve remix 🎵',
                 'bio' => 'Beatmaker & prodüktör. Yeni track\'ler ve behind-the-scenes.',
+            ],
+            [
+                'name' => 'Deniz Koç',
+                'username' => 'deniz',
+                'tagline' => 'Yemek tarifleri ve food styling 🍳',
+                'bio' => 'Şef & yemek fotoğrafçısı. Haftalık tarifler ve mutfak sırları.',
+            ],
+            [
+                'name' => 'Zeynep Akın',
+                'username' => 'zeynep',
+                'tagline' => 'Yazılım ve teknoloji 💻',
+                'bio' => 'Full-stack developer. Kodlama dersleri, proje incelemeleri ve tech hayatı.',
             ],
         ];
 
@@ -126,6 +141,85 @@ class DatabaseSeeder extends Seeder
                 'body' => 'Satın alındığında erişilebilen özel içerik.',
                 'visibility' => 'ppv',
                 'ppv_price_atomic' => 3000,
+            ]);
+
+            // Extra public posts for variety
+            Content::factory()->published()->create([
+                'creator_id' => $user->id,
+                'title' => 'Yeni Proje Duyurusu',
+                'body' => 'Heyecanlı bir proje üzerinde çalışıyorum! Yakında detaylar paylaşacağım. Takipte kalın 🔥',
+                'visibility' => 'public',
+            ]);
+
+            Content::factory()->published()->create([
+                'creator_id' => $user->id,
+                'title' => 'Soru & Cevap',
+                'body' => 'Yorumlarda sormak istediğiniz her şeyi sorabilirsiniz! Bu hafta tüm sorularınızı yanıtlıyorum.',
+                'visibility' => 'public',
+            ]);
+
+            // Registered-only content
+            Content::factory()->published()->create([
+                'creator_id' => $user->id,
+                'title' => 'Kayıtlı Kullanıcılara Özel',
+                'body' => 'Sadece kayıtlı kullanıcılar görebilir. Giriş yap ve keşfet!',
+                'visibility' => 'registered_only',
+            ]);
+        }
+
+        // ──── Social Interactions ────
+        $testUser = User::where('email', 'test@example.com')->first();
+        $allContents = Content::where('visibility', 'public')->get();
+
+        // Add comments from test user on first 5 public posts
+        foreach ($allContents->take(5) as $content) {
+            Comment::create([
+                'user_id' => $testUser->id,
+                'content_id' => $content->id,
+                'body' => 'Harika içerik! Devamını bekliyorum 👏',
+            ]);
+        }
+
+        // Creator cross-comments
+        $creatorUsers = User::where('role', 'creator')->get();
+        foreach ($allContents->take(8) as $i => $content) {
+            $commenter = $creatorUsers[$i % $creatorUsers->count()];
+            if ($commenter->id !== $content->creator_id) {
+                Comment::create([
+                    'user_id' => $commenter->id,
+                    'content_id' => $content->id,
+                    'body' => collect(['Çok güzel olmuş! 🔥', 'Eline sağlık!', 'Süper paylaşım 💯', 'Muhteşem!', 'Bu çok ilham verici', 'Bravo! 👏', 'Bayıldım!', 'Harika iş çıkarmışsın'])->random(),
+                ]);
+            }
+        }
+
+        // Reactions — test user likes first 10 public contents
+        foreach ($allContents->take(10) as $content) {
+            Reaction::create([
+                'user_id' => $testUser->id,
+                'reactable_type' => Content::class,
+                'reactable_id' => $content->id,
+                'type' => 'like',
+            ]);
+        }
+
+        // Creators like each other's posts
+        foreach ($allContents->take(15) as $i => $content) {
+            $liker = $creatorUsers[$i % $creatorUsers->count()];
+            if ($liker->id !== $content->creator_id) {
+                Reaction::firstOrCreate([
+                    'user_id' => $liker->id,
+                    'reactable_type' => Content::class,
+                    'reactable_id' => $content->id,
+                ], ['type' => 'like']);
+            }
+        }
+
+        // Bookmarks — test user bookmarks 3 posts
+        foreach ($allContents->take(3) as $content) {
+            Bookmark::create([
+                'user_id' => $testUser->id,
+                'content_id' => $content->id,
             ]);
         }
     }

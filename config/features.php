@@ -33,5 +33,9 @@ return [
         'tips'                 => env('FEATURES_TIPS', $local),
         'ui'                   => env('FEATURES_UI', $local),
         'ui_polish'            => env('FEATURES_UI_POLISH', $local),
+        'comments'             => env('FEATURES_COMMENTS', $local),
+        'reactions'            => env('FEATURES_REACTIONS', $local),
+        'bookmarks'            => env('FEATURES_BOOKMARKS', $local),
+        'notifications'        => env('FEATURES_NOTIFICATIONS', $local),
     ],
 ];

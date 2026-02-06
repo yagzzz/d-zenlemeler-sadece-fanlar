@@ -18,7 +18,7 @@ class UiPagesTest extends TestCase
         $response = $this->get('/');
 
         $response->assertStatus(200);
-        $response->assertSee('Feed');
+        $response->assertSee('data-page="feed"', false);
     }
 
     public function test_creator_page_renders(): void
@@ -41,7 +41,7 @@ class UiPagesTest extends TestCase
         $response = $this->get('/c/demo-creator');
 
         $response->assertStatus(200);
-        $response->assertSee('Creator');
+        $response->assertSee('data-page="creator"', false);
         $response->assertSee('demo-creator');
     }
 

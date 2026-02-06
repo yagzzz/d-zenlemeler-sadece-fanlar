@@ -2,51 +2,289 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ═══════════════════════════════════════════════════════════════════════
+   Sadece Fanlar — Design System
+   Inspired by JustFans reference, adapted to dark Tailwind theme
+   ═══════════════════════════════════════════════════════════════════════ */
+
+:root {
+    --sf-primary: #d946ef;        /* fuchsia-500 */
+    --sf-primary-hover: #c026d3;  /* fuchsia-600 */
+    --sf-surface: rgba(255,255,255,0.05);
+    --sf-border: rgba(255,255,255,0.08);
+    --sf-text: #f1f5f9;
+    --sf-text-muted: #94a3b8;
+    --sf-radius: 1rem;
+    --sf-radius-lg: 1.5rem;
+}
+
+/* ── Scrollbar ──────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 99px; }
+
+/* ── Skeleton Shimmer ───────────────────────────────────────────────── */
 @layer components {
     .skeleton-card {
         position: relative;
         width: 100%;
-        height: 12rem;
+        height: 10rem;
         overflow: hidden;
-        border-radius: 1.5rem;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        background: rgba(255, 255, 255, 0.05);
+        border-radius: var(--sf-radius);
+        border: 1px solid var(--sf-border);
+        background: var(--sf-surface);
     }
-
     .skeleton-card::after {
         content: '';
         position: absolute;
         inset: 0;
         transform: translateX(-100%);
         animation: skeleton-shimmer 1.5s infinite;
-        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-    }
-
-    .billing-toggle {
-        cursor: pointer;
-        border-radius: 9999px;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        padding: 0.25rem 0.75rem;
-        font-size: 0.75rem;
-        color: #94a3b8;
-    }
-
-    .billing-toggle.active {
-        border-color: rgba(255, 255, 255, 0.4);
-        background: rgba(255, 255, 255, 0.1);
-        color: #ffffff;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
     }
 }
-
 @keyframes skeleton-shimmer {
-    100% {
-        transform: translateX(100%);
+    100% { transform: translateX(100%); }
+}
+
+/* ── Side Menu (desktop) ────────────────────────────────────────────── */
+@layer components {
+    .side-menu {
+        @apply fixed left-0 top-0 bottom-0 w-60 bg-slate-950 border-r border-white/5
+               flex flex-col py-6 z-30;
+    }
+    .side-menu .menu-brand {
+        @apply px-5 mb-8 flex items-center gap-3;
+    }
+    .side-menu .menu-brand .brand-icon {
+        @apply h-9 w-9 rounded-xl bg-gradient-to-br from-fuchsia-500 to-cyan-400
+               flex items-center justify-center text-sm font-bold text-white;
+    }
+    .side-menu .menu-brand .brand-text {
+        @apply text-base font-semibold tracking-tight;
+    }
+    .side-menu .menu-item {
+        @apply flex items-center gap-3 px-5 py-3 text-sm text-slate-400
+               hover:text-white hover:bg-white/5 transition-colors cursor-pointer;
+    }
+    .side-menu .menu-item.active {
+        @apply text-white bg-white/5 border-r-2 border-fuchsia-500;
+    }
+    .side-menu .menu-item .menu-icon {
+        @apply w-5 h-5 flex-shrink-0 text-center;
+    }
+    .side-menu .menu-footer {
+        @apply mt-auto px-5;
     }
 }
 
-/* ── Modal overlays ─────────────────────────────────────────────────── */
+/* ── Main Content Area ──────────────────────────────────────────────── */
+@layer components {
+    .main-content {
+        @apply ml-0 lg:ml-60 min-h-screen pb-20 lg:pb-6;
+    }
+    .content-column {
+        @apply mx-auto max-w-2xl px-4 py-6;
+    }
+}
+
+/* ── Bottom Nav (mobile) ────────────────────────────────────────────── */
+@layer components {
+    .bottom-nav {
+        @apply fixed bottom-0 left-0 right-0 z-40
+               bg-slate-950/95 backdrop-blur border-t border-white/5
+               lg:hidden;
+    }
+    .bottom-nav .nav-items {
+        @apply flex items-center justify-around px-2 py-2;
+    }
+    .bottom-nav .nav-item {
+        @apply flex flex-col items-center gap-0.5 py-1 px-3 text-slate-500
+               hover:text-white transition-colors;
+    }
+    .bottom-nav .nav-item.active {
+        @apply text-fuchsia-400;
+    }
+    .bottom-nav .nav-item .nav-icon {
+        @apply text-xl leading-none;
+    }
+    .bottom-nav .nav-item .nav-label {
+        @apply text-[10px] font-medium;
+    }
+}
+
+/* ── Post Box / Content Card ────────────────────────────────────────── */
+@layer components {
+    .post-box {
+        @apply bg-slate-900/80 border border-white/5 rounded-2xl overflow-hidden;
+    }
+    .post-box .post-header {
+        @apply flex items-center gap-3 p-4;
+    }
+    .post-box .post-avatar {
+        @apply h-11 w-11 rounded-full bg-gradient-to-br from-fuchsia-500 to-cyan-400
+               flex items-center justify-center text-sm font-bold text-white flex-shrink-0;
+    }
+    .post-box .post-meta {
+        @apply flex-1 min-w-0;
+    }
+    .post-box .post-meta .post-creator {
+        @apply text-sm font-semibold text-white truncate;
+    }
+    .post-box .post-meta .post-time {
+        @apply text-xs text-slate-500;
+    }
+    .post-box .post-body {
+        @apply px-4 pb-3 text-sm text-slate-200 leading-relaxed whitespace-pre-line;
+    }
+    .post-box .post-body .post-title {
+        @apply font-semibold text-white mb-1;
+    }
+    .post-box .post-media {
+        @apply relative bg-slate-800/50;
+    }
+    .post-box .post-locked-overlay {
+        @apply absolute inset-0 flex flex-col items-center justify-center gap-3
+               bg-slate-950/80 backdrop-blur-sm;
+    }
+    .post-box .post-actions {
+        @apply flex items-center gap-1 px-3 py-2 border-t border-white/5;
+    }
+    .post-box .post-actions .action-btn {
+        @apply flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs text-slate-400
+               hover:text-white hover:bg-white/5 transition-colors cursor-pointer select-none;
+    }
+    .post-box .post-actions .action-btn.active {
+        @apply text-fuchsia-400;
+    }
+    .post-box .post-actions .action-spacer {
+        @apply flex-1;
+    }
+}
+
+/* ── Pill Buttons ───────────────────────────────────────────────────── */
+@layer components {
+    .btn-primary {
+        @apply rounded-xl bg-fuchsia-500 hover:bg-fuchsia-600 px-5 py-2.5
+               text-sm font-semibold text-white transition-colors;
+    }
+    .btn-outline {
+        @apply rounded-xl border border-white/15 px-5 py-2.5
+               text-sm font-semibold text-slate-200 hover:bg-white/5 transition-colors;
+    }
+    .btn-ghost {
+        @apply rounded-xl px-5 py-2.5 text-sm text-slate-400
+               hover:text-white hover:bg-white/5 transition-colors;
+    }
+    .pill {
+        @apply rounded-full px-4 py-2 text-xs font-semibold transition-colors cursor-pointer;
+    }
+    .pill-active {
+        @apply bg-white text-slate-900;
+    }
+    .pill-default {
+        @apply bg-white/10 text-slate-300 hover:bg-white/20;
+    }
+}
+
+/* ── Form Inputs ────────────────────────────────────────────────────── */
+@layer components {
+    .sf-input {
+        @apply w-full rounded-xl border border-white/10 bg-white/5
+               px-4 py-3 text-sm text-white placeholder-slate-500
+               focus:border-fuchsia-400/50 focus:outline-none transition-colors;
+    }
+    .sf-textarea {
+        @apply w-full rounded-xl border border-white/10 bg-white/5
+               px-4 py-3 text-sm text-white placeholder-slate-500
+               focus:border-fuchsia-400/50 focus:outline-none transition-colors resize-none;
+    }
+}
+
+/* ── Tier Card ──────────────────────────────────────────────────────── */
+@layer components {
+    .tier-card {
+        @apply rounded-2xl border border-white/10 bg-white/5 p-5
+               hover:bg-white/10 transition-all duration-200;
+    }
+    .tier-card.popular {
+        @apply border-fuchsia-500/30 bg-fuchsia-500/5;
+    }
+}
+
+/* ── Profile Cover ──────────────────────────────────────────────────── */
+@layer components {
+    .profile-cover {
+        @apply relative h-48 bg-gradient-to-br from-fuchsia-600/40 via-slate-900 to-cyan-500/20
+               overflow-hidden;
+    }
+    .profile-avatar {
+        @apply h-24 w-24 rounded-full bg-gradient-to-br from-fuchsia-500 to-cyan-400
+               flex items-center justify-center text-2xl font-bold text-white
+               border-4 border-slate-950 -mt-12 relative z-10;
+    }
+}
+
+/* ── Modal ──────────────────────────────────────────────────────────── */
 #tier-modal.hidden,
 #payment-modal.hidden,
-#tip-modal.hidden {
+#tip-modal.hidden,
+#comment-modal.hidden {
     display: none !important;
+}
+
+@layer components {
+    .modal-sheet {
+        @apply absolute bottom-0 left-0 right-0 mx-auto max-w-lg
+               rounded-t-2xl bg-slate-950 border-t border-white/10 p-5
+               max-h-[80vh] overflow-y-auto;
+    }
+    .billing-toggle {
+        @apply cursor-pointer rounded-full border border-white/10
+               px-3 py-1 text-xs text-slate-400;
+    }
+    .billing-toggle.active {
+        @apply border-white/30 bg-white/10 text-white;
+    }
+}
+
+/* ── Comment ────────────────────────────────────────────────────────── */
+@layer components {
+    .comment-item {
+        @apply flex gap-3 py-3;
+    }
+    .comment-avatar {
+        @apply h-8 w-8 rounded-full bg-white/10 flex items-center justify-center
+               text-xs font-bold text-slate-300 flex-shrink-0;
+    }
+    .comment-body {
+        @apply flex-1 min-w-0;
+    }
+    .comment-body .comment-author {
+        @apply text-xs font-semibold text-white;
+    }
+    .comment-body .comment-text {
+        @apply text-sm text-slate-300 mt-0.5;
+    }
+    .comment-body .comment-meta {
+        @apply flex items-center gap-3 mt-1 text-xs text-slate-500;
+    }
+}
+
+/* ── Notification Item ──────────────────────────────────────────────── */
+@layer components {
+    .notification-item {
+        @apply flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-colors;
+    }
+    .notification-item.unread {
+        @apply bg-fuchsia-500/5;
+    }
+    .notification-dot {
+        @apply h-2 w-2 rounded-full bg-fuchsia-400 flex-shrink-0;
+    }
+}
+
+/* ── Responsive hide ────────────────────────────────────────────────── */
+@media (max-width: 1023px) {
+    .side-menu { display: none; }
 }

@@ -1,55 +1,54 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="mx-auto max-w-4xl px-6 py-8" data-page="create">
+<div class="content-column" data-page="create">
     <div class="mb-6">
-        <p class="text-xs uppercase tracking-[0.3em] text-slate-500">Create</p>
-        <h1 class="text-3xl font-semibold">İçerik Oluştur</h1>
-        <p class="mt-2 text-sm text-slate-400">Yeni içerik paylaş ve fan'larınla buluş.</p>
+        <h1 class="text-xl font-bold">İçerik Oluştur</h1>
+        <p class="text-sm text-slate-400">Yeni içerik paylaş ve fan'larınla buluş.</p>
     </div>
 
-    {{-- Creator Studio --}}
-    <div class="space-y-6" data-testid="creator-studio">
-        {{-- Content Type Selector --}}
-        <div class="flex gap-3">
-            <button class="flex-1 rounded-2xl bg-white text-slate-900 py-3 text-sm font-semibold">📝 Metin</button>
-            <button class="flex-1 rounded-2xl bg-white/10 text-slate-300 hover:bg-white/20 py-3 text-sm font-semibold transition-colors">📷 Fotoğraf</button>
-            <button class="flex-1 rounded-2xl bg-white/10 text-slate-300 hover:bg-white/20 py-3 text-sm font-semibold transition-colors">🎥 Video</button>
-        </div>
+    <div class="post-box" data-testid="creator-studio">
+        <form id="create-form" class="p-4 space-y-4" data-testid="create-form">
+            {{-- Title --}}
+            <input type="text" name="title" placeholder="Başlık…" class="sf-input text-base font-semibold" required />
 
-        {{-- Compose Form --}}
-        <form class="space-y-4" data-testid="create-form">
-            <div>
-                <label class="text-xs uppercase tracking-widest text-slate-400">Başlık</label>
-                <input type="text" placeholder="İçerik başlığı…" class="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder-slate-500 focus:border-fuchsia-400/50 focus:outline-none transition-colors" />
-            </div>
-            <div>
-                <label class="text-xs uppercase tracking-widest text-slate-400">İçerik</label>
-                <textarea rows="6" placeholder="İçeriğini yaz…" class="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder-slate-500 focus:border-fuchsia-400/50 focus:outline-none transition-colors"></textarea>
-            </div>
+            {{-- Body --}}
+            <textarea name="body" rows="5" placeholder="İçeriğini yaz…" class="sf-textarea" id="create-body"></textarea>
 
-            {{-- Media Upload --}}
-            <div class="rounded-2xl border-2 border-dashed border-white/10 p-8 text-center hover:border-fuchsia-400/30 transition-colors cursor-pointer">
+            {{-- Draft indicator --}}
+            <p id="draft-status" class="text-xs text-slate-500 hidden">💾 Taslak kaydedildi</p>
+
+            {{-- Media Upload Zone --}}
+            <div id="upload-zone" class="rounded-xl border-2 border-dashed border-white/10 p-6 text-center hover:border-fuchsia-400/30 transition-colors cursor-pointer">
                 <p class="text-2xl">📎</p>
                 <p class="mt-2 text-sm text-slate-400">Medya eklemek için tıkla veya sürükle</p>
-                <p class="mt-1 text-xs text-slate-500">JPG, PNG, MP4 — Maks 50MB</p>
+                <p class="mt-1 text-xs text-slate-500">JPG, PNG, MP4, MP3 — Maks 100MB</p>
+                <input type="file" id="media-input" class="hidden" multiple accept="image/*,video/*,audio/*" />
             </div>
+            <div id="upload-previews" class="grid grid-cols-3 gap-2"></div>
 
             {{-- Visibility --}}
             <div>
-                <label class="text-xs uppercase tracking-widest text-slate-400">Görünürlük</label>
-                <div class="mt-2 flex flex-wrap gap-2">
-                    <button type="button" class="rounded-full bg-white text-slate-900 px-4 py-2 text-xs font-semibold">🌍 Herkese Açık</button>
-                    <button type="button" class="rounded-full bg-white/10 text-slate-300 px-4 py-2 text-xs font-semibold hover:bg-white/20 transition-colors">👥 Kayıtlı Üyeler</button>
-                    <button type="button" class="rounded-full bg-white/10 text-slate-300 px-4 py-2 text-xs font-semibold hover:bg-white/20 transition-colors">⭐ Aboneler</button>
-                    <button type="button" class="rounded-full bg-white/10 text-slate-300 px-4 py-2 text-xs font-semibold hover:bg-white/20 transition-colors">🔒 PPV</button>
+                <label class="text-xs uppercase tracking-widest text-slate-400 mb-2 block">Görünürlük</label>
+                <div class="flex flex-wrap gap-2">
+                    <button type="button" class="pill pill-active visibility-btn" data-visibility="public">🌍 Herkese Açık</button>
+                    <button type="button" class="pill pill-default visibility-btn" data-visibility="registered_only">👥 Kayıtlı</button>
+                    <button type="button" class="pill pill-default visibility-btn" data-visibility="subscriber_only">⭐ Aboneler</button>
+                    <button type="button" class="pill pill-default visibility-btn" data-visibility="ppv">🔒 PPV</button>
                 </div>
+                <input type="hidden" name="visibility" value="public" id="visibility-input" />
+            </div>
+
+            {{-- PPV Price (shown only when PPV selected) --}}
+            <div id="ppv-price-row" class="hidden">
+                <label class="text-xs uppercase tracking-widest text-slate-400">PPV Fiyat (atomic XMR)</label>
+                <input type="number" name="ppv_price_atomic" min="1000" value="3000" class="sf-input mt-1" />
             </div>
 
             {{-- Actions --}}
             <div class="flex gap-3 pt-2">
-                <button type="button" class="flex-1 rounded-2xl border border-white/20 py-3 text-sm font-semibold text-slate-300 hover:bg-white/5 transition-colors">Taslak Kaydet</button>
-                <button type="submit" class="flex-1 rounded-2xl bg-fuchsia-500 hover:bg-fuchsia-600 py-3 text-sm font-semibold text-white transition-colors">Yayınla</button>
+                <button type="button" id="save-draft-btn" class="btn-outline flex-1 py-3">Taslak Kaydet</button>
+                <button type="submit" class="btn-primary flex-1 py-3">Yayınla</button>
             </div>
         </form>
     </div>

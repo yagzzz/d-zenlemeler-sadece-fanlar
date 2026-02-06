@@ -15,39 +15,60 @@
     @endif
 </head>
 <body class="min-h-screen bg-slate-950 text-slate-100 antialiased" data-ui-enabled="{{ config('features.flags.ui') ? '1' : '0' }}" data-ui-polish-enabled="{{ config('features.flags.ui_polish') ? '1' : '0' }}" data-app-env="{{ app()->environment() }}">
-    <div class="min-h-screen pb-24">
+
+    {{-- ── Desktop Side Menu ─────────────────────────────────────────── --}}
+    <aside class="side-menu">
+        <a href="/" class="menu-brand">
+            <div class="brand-icon">SF</div>
+            <span class="brand-text">Sadece Fanlar</span>
+        </a>
+
+        @php($currentPath = request()->path())
+        <nav class="flex-1 space-y-0.5">
+            <a href="/"              class="menu-item {{ $currentPath === '/' ? 'active' : '' }}"><span class="menu-icon">🏠</span> Ana Sayfa</a>
+            <a href="/explore"       class="menu-item {{ str_starts_with($currentPath, 'explore') ? 'active' : '' }}"><span class="menu-icon">🔍</span> Keşfet</a>
+            <a href="/notifications" class="menu-item {{ str_starts_with($currentPath, 'notifications') ? 'active' : '' }}"><span class="menu-icon">🔔</span> Bildirimler</a>
+            <a href="/inbox"         class="menu-item {{ str_starts_with($currentPath, 'inbox') ? 'active' : '' }}"><span class="menu-icon">✉️</span> Mesajlar</a>
+            <a href="/bookmarks"     class="menu-item {{ str_starts_with($currentPath, 'bookmarks') ? 'active' : '' }}"><span class="menu-icon">🔖</span> Kaydedilenler</a>
+            <a href="/create"        class="menu-item {{ str_starts_with($currentPath, 'create') ? 'active' : '' }}"><span class="menu-icon">➕</span> Oluştur</a>
+            <a href="/profile"       class="menu-item {{ str_starts_with($currentPath, 'profile') ? 'active' : '' }}"><span class="menu-icon">👤</span> Profil</a>
+        </nav>
+
+        <div class="menu-footer">
+            <div class="flex items-center gap-3 rounded-xl bg-white/5 p-3">
+                <div class="h-9 w-9 rounded-full bg-gradient-to-br from-fuchsia-500 to-cyan-400 flex items-center justify-center text-xs font-bold text-white">
+                    {{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}
+                </div>
+                <div class="min-w-0 flex-1">
+                    <p class="text-xs font-semibold truncate">{{ auth()->user()->name ?? 'Misafir' }}</p>
+                    <p class="text-[10px] text-slate-500 truncate">{{ auth()->user()->email ?? '' }}</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    {{-- ── Main Content ──────────────────────────────────────────────── --}}
+    <div class="main-content">
         @yield('content')
     </div>
 
-    <nav class="fixed bottom-0 left-0 right-0 z-40 bg-slate-950/90 backdrop-blur border-t border-white/10" data-nav="bottom">
-        <div class="mx-auto max-w-4xl px-6 py-3 flex items-center justify-between text-xs uppercase tracking-widest text-slate-400">
-            <a href="/" class="flex flex-col items-center gap-1 text-slate-100">
-                <span class="text-xl">🏠</span>
-                <span>Home</span>
-            </a>
-            <a href="/explore" class="flex flex-col items-center gap-1 hover:text-slate-100 transition-colors">
-                <span class="text-xl">✨</span>
-                <span>Explore</span>
-            </a>
-            <a href="/create" class="flex flex-col items-center gap-1 hover:text-slate-100 transition-colors">
-                <span class="text-xl">➕</span>
-                <span>Create</span>
-            </a>
-            <a href="/inbox" class="flex flex-col items-center gap-1 hover:text-slate-100 transition-colors">
-                <span class="text-xl">💬</span>
-                <span>Inbox</span>
-            </a>
-            <a href="/profile" class="flex flex-col items-center gap-1 hover:text-slate-100 transition-colors">
-                <span class="text-xl">👤</span>
-                <span>Profile</span>
-            </a>
+    {{-- ── Mobile Bottom Nav ─────────────────────────────────────────── --}}
+    <nav class="bottom-nav" data-nav="bottom">
+        <div class="nav-items">
+            <a href="/"          class="nav-item {{ $currentPath === '/' ? 'active' : '' }}"><span class="nav-icon">🏠</span><span class="nav-label">Ana Sayfa</span></a>
+            <a href="/explore"   class="nav-item {{ str_starts_with($currentPath, 'explore') ? 'active' : '' }}"><span class="nav-icon">🔍</span><span class="nav-label">Keşfet</span></a>
+            <a href="/create"    class="nav-item {{ str_starts_with($currentPath, 'create') ? 'active' : '' }}"><span class="nav-icon">➕</span><span class="nav-label">Oluştur</span></a>
+            <a href="/notifications" class="nav-item {{ str_starts_with($currentPath, 'notifications') ? 'active' : '' }}"><span class="nav-icon">🔔</span><span class="nav-label">Bildirim</span></a>
+            <a href="/profile"   class="nav-item {{ str_starts_with($currentPath, 'profile') ? 'active' : '' }}"><span class="nav-icon">👤</span><span class="nav-label">Profil</span></a>
         </div>
     </nav>
 
+    {{-- ── Global Elements ───────────────────────────────────────────── --}}
     <div id="toast-root" class="fixed top-4 right-4 z-50 space-y-3"></div>
 
     @include('components.tier-modal')
     @include('components.payment-modal')
     @include('components.tip-modal')
+    @include('components.comment-modal')
 </body>
 </html>

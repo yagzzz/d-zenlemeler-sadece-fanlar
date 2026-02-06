@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class Content extends Model
 {
@@ -21,11 +23,14 @@ class Content extends Model
         'required_tier_id',
         'is_published',
         'published_at',
+        'draft_body',
+        'draft_saved_at',
     ];
 
     protected $casts = [
         'is_published' => 'boolean',
         'published_at' => 'datetime',
+        'draft_saved_at' => 'datetime',
     ];
 
     public function creator(): BelongsTo
@@ -43,6 +48,21 @@ class Content extends Model
     public function requiredTier(): BelongsTo
     {
         return $this->belongsTo(Tier::class, 'required_tier_id');
+    }
+
+    public function comments(): HasMany
+    {
+        return $this->hasMany(Comment::class);
+    }
+
+    public function reactions(): MorphMany
+    {
+        return $this->morphMany(Reaction::class, 'reactable');
+    }
+
+    public function bookmarks(): HasMany
+    {
+        return $this->hasMany(Bookmark::class);
     }
 
     public function isPublic(): bool

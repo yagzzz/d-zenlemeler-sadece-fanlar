@@ -48,14 +48,14 @@ it('tip-modal backdrop has modal-backdrop class', function () {
    Content Card Template
    ═══════════════════════════════════════════════════════════════════════ */
 
-it('content-card template includes creator-avatar element', function () {
+it('content-card template includes post-avatar element', function () {
     $html = $this->get('/')->getContent();
-    expect($html)->toContain('creator-avatar');
+    expect($html)->toContain('post-avatar');
 });
 
-it('content-card template includes creator-name element', function () {
+it('content-card template includes post-creator element', function () {
     $html = $this->get('/')->getContent();
-    expect($html)->toContain('creator-name');
+    expect($html)->toContain('post-creator');
 });
 
 /* ═══════════════════════════════════════════════════════════════════════
@@ -104,11 +104,11 @@ it('create page has creator studio form', function () {
         ->assertSee('create-form', false);
 });
 
-it('create page has content type buttons', function () {
+it('create page has visibility selector', function () {
     $this->get('/create')
         ->assertOk()
-        ->assertSee('Metin')
-        ->assertSee('Video');
+        ->assertSee('visibility-btn', false)
+        ->assertSee('upload-zone', false);
 });
 
 it('create page has visibility options', function () {
@@ -172,10 +172,10 @@ it('creator show page has avatar element with initial', function () {
 it('database seeder creates creators with profiles and content', function () {
     $this->seed();
 
-    expect(User::where('role', 'creator')->count())->toBe(3);
-    expect(CreatorProfile::count())->toBe(3);
-    expect(Tier::count())->toBe(6); // 2 tiers × 3 creators
-    expect(Content::where('is_published', true)->count())->toBeGreaterThanOrEqual(12); // 4 contents × 3 creators
+    expect(User::where('role', 'creator')->count())->toBe(5);
+    expect(CreatorProfile::count())->toBe(5);
+    expect(Tier::count())->toBe(10); // 2 tiers × 5 creators
+    expect(Content::where('is_published', true)->count())->toBeGreaterThanOrEqual(35); // 7 contents × 5 creators
 });
 
 it('seeded feed returns content', function () {
