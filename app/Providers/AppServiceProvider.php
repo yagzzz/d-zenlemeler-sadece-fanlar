@@ -11,6 +11,7 @@ use App\Services\Media\StorageDriver;
 use App\Services\Payments\MockMoneroGateway;
 use App\Services\Payments\MockPaymentSimulator;
 use App\Services\Payments\PaymentGateway;
+use App\Services\SettingsService;
 use App\Services\TierService;
 use App\Services\TipService;
 use Illuminate\Support\Facades\Gate;
@@ -29,6 +30,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(TipService::class, TipService::class);
         $this->app->singleton(MockPaymentSimulator::class);
         $this->app->bind(PaymentGateway::class, MockMoneroGateway::class);
+        $this->app->singleton(SettingsService::class);
         $this->app->bind(StorageDriver::class, function () {
             return match (config('media.driver')) {
                 's3', 'r2' => new S3CompatibleDriver,

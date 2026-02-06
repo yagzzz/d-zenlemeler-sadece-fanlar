@@ -21,6 +21,9 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        // Run settings seeder first
+        $this->call(SettingsSeeder::class);
+
         // Default test user
         User::factory()->create([
             'name' => 'Test User',

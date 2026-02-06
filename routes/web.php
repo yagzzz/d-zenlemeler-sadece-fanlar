@@ -1,6 +1,11 @@
 <?php
 
 use App\Http\Controllers\AccountController;
+use App\Http\Controllers\Admin\AdminContentController;
+use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Admin\AdminReportController;
+use App\Http\Controllers\Admin\AdminSettingsController;
+use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Admin\CreatorApplicationController as AdminCreatorApplicationController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
@@ -109,11 +114,37 @@ Route::middleware(['auth', 'feature:creator_applications'])
     ->post('/creator/apply', [CreatorApplicationController::class, 'apply']);
 
 Route::prefix('admin')
-    ->middleware(['auth', 'admin', 'feature:creator_applications'])
+    ->middleware(['auth', 'admin'])
     ->group(function () {
-        Route::get('/creator-applications', [AdminCreatorApplicationController::class, 'index']);
-        Route::post('/creator-applications/{application}/approve', [AdminCreatorApplicationController::class, 'approve']);
-        Route::post('/creator-applications/{application}/reject', [AdminCreatorApplicationController::class, 'reject']);
+        // Dashboard
+        Route::get('/', [AdminDashboardController::class, 'index']);
+
+        // Settings management
+        Route::get('/settings', [AdminSettingsController::class, 'index']);
+        Route::put('/settings', [AdminSettingsController::class, 'update']);
+
+        // User management
+        Route::get('/users', [AdminUserController::class, 'index']);
+        Route::get('/users/{user}/edit', [AdminUserController::class, 'edit']);
+        Route::put('/users/{user}', [AdminUserController::class, 'update']);
+        Route::post('/users/{user}/ban', [AdminUserController::class, 'ban']);
+
+        // Content management
+        Route::get('/contents', [AdminContentController::class, 'index']);
+        Route::post('/contents/{content}/takedown', [AdminContentController::class, 'takedown']);
+        Route::post('/contents/{content}/restore', [AdminContentController::class, 'restore']);
+
+        // Report management
+        Route::get('/reports', [AdminReportController::class, 'index']);
+        Route::post('/reports/{report}/resolve', [AdminReportController::class, 'resolve']);
+        Route::post('/reports/{report}/dismiss', [AdminReportController::class, 'dismiss']);
+
+        // Creator applications (feature-gated)
+        Route::middleware(['feature:creator_applications'])->group(function () {
+            Route::get('/creator-applications', [AdminCreatorApplicationController::class, 'index']);
+            Route::post('/creator-applications/{application}/approve', [AdminCreatorApplicationController::class, 'approve']);
+            Route::post('/creator-applications/{application}/reject', [AdminCreatorApplicationController::class, 'reject']);
+        });
     });
 
 Route::prefix('creator')

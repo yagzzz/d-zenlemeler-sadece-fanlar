@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ config('app.name', 'Sadece Fanlar') }}</title>
+    <title>{{ settings('site_name', config('app.name', 'Sadece Fanlar')) }}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
@@ -47,12 +47,12 @@
                         @else
                         <div class="user-details mb-4 d-flex pointer-cursor flex-row">
                             <div class="ml-0 ml-md-2">
-                                <div class="user-avatar rounded-circle d-flex align-items-center justify-content-center">😎</div>
+                                <div class="user-avatar rounded-circle d-flex align-items-center justify-content-center">{{ settings('site_logo_emoji', '😎') }}</div>
                             </div>
                             <div class="d-none d-lg-block overflow-hidden">
                                 <div class="pl-2 d-flex justify-content-center flex-column overflow-hidden">
                                     <div class="ml-2 d-flex flex-column overflow-hidden">
-                                        <span class="text-bold text-truncate">Sadece Fanlar</span>
+                                        <span class="text-bold text-truncate">{{ settings('site_name', 'Sadece Fanlar') }}</span>
                                         <span class="text-muted"><a href="/login" style="color:#d946ef;">Giriş Yap</a></span>
                                     </div>
                                 </div>
@@ -153,7 +153,7 @@
                                     </a>
                                     @auth
                                     @if (auth()->user()?->isAdmin())
-                                    <a href="/admin/creator-applications" class="more-menu-item">
+                                    <a href="/admin" class="more-menu-item">
                                         <span>🛡️</span> <span>Admin Panel</span>
                                     </a>
                                     @endif
@@ -209,6 +209,13 @@
                             </li>
                             @endauth
                         </ul>
+
+                        {{-- Sidebar Ad Slot --}}
+                        @if (settings('ads_enabled') && settings('ad_slot_sidebar'))
+                        <div class="ad-slot ad-slot-sidebar mt-3" data-ad="sidebar">
+                            {!! settings('ad_slot_sidebar') !!}
+                        </div>
+                        @endif
                     </div>
                 </div>
 
@@ -256,7 +263,7 @@
                             <div class="d-flex justify-content-center align-items-center">
                                 <div class="icon-wrapper d-flex justify-content-center align-items-center">
                                     <div class="user-avatar rounded-circle w-32 d-flex align-items-center justify-content-center mobile-nav-avatar">
-                                        @auth{{ strtoupper(substr(auth()->user()->name, 0, 1)) }}@else😎@endauth
+                                        @auth{{ strtoupper(substr(auth()->user()->name, 0, 1)) }}@else{{ settings('site_logo_emoji', '😎') }}@endauth
                                     </div>
                                 </div>
                             </div>

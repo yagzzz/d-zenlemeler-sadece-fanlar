@@ -357,7 +357,7 @@ it('dropdown shows Admin Panel for admin user', function () {
     $html = $this->actingAs($admin)->get('/')->getContent();
 
     expect($html)->toContain('Admin Panel');
-    expect($html)->toContain('href="/admin/creator-applications"');
+    expect($html)->toContain('href="/admin"');
 });
 
 it('dropdown hides Admin Panel for regular user', function () {
