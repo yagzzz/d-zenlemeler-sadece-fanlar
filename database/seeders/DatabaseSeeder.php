@@ -215,11 +215,61 @@ class DatabaseSeeder extends Seeder
             }
         }
 
-        // Bookmarks — test user bookmarks 3 posts
-        foreach ($allContents->take(3) as $content) {
+        // Bookmarks — test user bookmarks 5 posts
+        foreach ($allContents->take(5) as $content) {
             Bookmark::create([
                 'user_id' => $testUser->id,
                 'content_id' => $content->id,
+            ]);
+        }
+
+        // Additional social depth — more cross-comments
+        $commentBodies = [
+            'Kesinlikle katılıyorum! 🙌',
+            'Bu tam da aradığım şeydi, teşekkürler!',
+            'Daha fazla böyle içerik lütfen 🔥',
+            'Vay canına, çok detaylı anlatmışsın',
+            'Bunu arkadaşlarıma da göstermem lazım',
+            'Ne kadar ilham verici ✨',
+            'Harikasın, eline sağlık!',
+            'Böyle devam 💪',
+            'Bu alanda en iyi içeriği sen üretiyorsun',
+            'Yeni başlayanlar için de süper rehber olmuş',
+            'Uzun süredir böyle kaliteli içerik arıyordum',
+            'Bir sonraki paylaşımını sabırsızlıkla bekliyorum',
+        ];
+
+        $allPublicContents = Content::where('visibility', 'public')->get();
+        foreach ($allPublicContents as $content) {
+            // 2-3 extra comments per public post
+            $commenters = $creatorUsers->where('id', '!=', $content->creator_id)->shuffle()->take(rand(2, 3));
+            foreach ($commenters as $commenter) {
+                Comment::create([
+                    'user_id' => $commenter->id,
+                    'content_id' => $content->id,
+                    'body' => $commentBodies[array_rand($commentBodies)],
+                ]);
+            }
+        }
+
+        // Extra reactions — creators react to all public content
+        foreach ($allPublicContents as $content) {
+            foreach ($creatorUsers->where('id', '!=', $content->creator_id)->shuffle()->take(3) as $liker) {
+                Reaction::firstOrCreate([
+                    'user_id' => $liker->id,
+                    'reactable_type' => Content::class,
+                    'reactable_id' => $content->id,
+                ], ['type' => 'like']);
+            }
+        }
+
+        // Test user comments on more posts
+        foreach ($allPublicContents->shuffle()->take(10) as $content) {
+            Comment::firstOrCreate([
+                'user_id' => $testUser->id,
+                'content_id' => $content->id,
+            ], [
+                'body' => $commentBodies[array_rand($commentBodies)],
             ]);
         }
     }
