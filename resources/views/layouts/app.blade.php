@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ config('app.name', 'Sadece Fanlar') }}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
     @php($hasViteManifest = is_file(public_path('build/manifest.json')))
     @php($hasViteHot = is_file(storage_path('framework/vite.hot')))
     @if ($hasViteHot || $hasViteManifest)
@@ -14,57 +17,177 @@
         <script defer src="/app.js"></script>
     @endif
 </head>
-<body class="min-h-screen bg-slate-950 text-slate-100 antialiased" data-ui-enabled="{{ config('features.flags.ui') ? '1' : '0' }}" data-ui-polish-enabled="{{ config('features.flags.ui_polish') ? '1' : '0' }}" data-app-env="{{ app()->environment() }}">
+<body class="d-flex flex-column" data-ui-enabled="{{ config('features.flags.ui') ? '1' : '0' }}" data-ui-polish-enabled="{{ config('features.flags.ui_polish') ? '1' : '0' }}" data-app-env="{{ app()->environment() }}">
 
-    {{-- ── Desktop Side Menu ─────────────────────────────────────────── --}}
-    <aside class="side-menu">
-        <a href="/" class="menu-brand">
-            <div class="brand-icon">SF</div>
-            <span class="brand-text">Sadece Fanlar</span>
-        </a>
+    @php($currentPath = request()->path())
 
-        @php($currentPath = request()->path())
-        <nav class="flex-1 space-y-0.5">
-            <a href="/"              class="menu-item {{ $currentPath === '/' ? 'active' : '' }}"><span class="menu-icon">🏠</span> Ana Sayfa</a>
-            <a href="/explore"       class="menu-item {{ str_starts_with($currentPath, 'explore') ? 'active' : '' }}"><span class="menu-icon">🔍</span> Keşfet</a>
-            <a href="/notifications" class="menu-item {{ str_starts_with($currentPath, 'notifications') ? 'active' : '' }}"><span class="menu-icon">🔔</span> Bildirimler</a>
-            <a href="/inbox"         class="menu-item {{ str_starts_with($currentPath, 'inbox') ? 'active' : '' }}"><span class="menu-icon">✉️</span> Mesajlar</a>
-            <a href="/bookmarks"     class="menu-item {{ str_starts_with($currentPath, 'bookmarks') ? 'active' : '' }}"><span class="menu-icon">🔖</span> Kaydedilenler</a>
-            <a href="/create"        class="menu-item {{ str_starts_with($currentPath, 'create') ? 'active' : '' }}"><span class="menu-icon">➕</span> Oluştur</a>
-            <a href="/profile"       class="menu-item {{ str_starts_with($currentPath, 'profile') ? 'active' : '' }}"><span class="menu-icon">👤</span> Profil</a>
-        </nav>
+    <div class="flex-fill">
+        <div class="container-xl overflow-hidden">
+            <div class="row main-wrapper">
+                {{-- ── Desktop Side Menu (col-2/col-md-3) ────────────── --}}
+                <div class="col-2 col-md-3 pt-4 p-0 d-none d-md-block">
+                    <div class="side-menu px-1 px-md-2 px-lg-3">
+                        {{-- User details --}}
+                        <div class="user-details mb-4 d-flex pointer-cursor flex-row">
+                            <div class="ml-0 ml-md-2">
+                                <div class="user-avatar rounded-circle d-flex align-items-center justify-content-center">
+                                    {{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}
+                                </div>
+                            </div>
+                            <div class="d-none d-lg-block overflow-hidden">
+                                <div class="pl-2 d-flex justify-content-center flex-column overflow-hidden">
+                                    <div class="ml-2 d-flex flex-column overflow-hidden">
+                                        <span class="text-bold text-truncate">{{ auth()->user()->name ?? 'Misafir' }}</span>
+                                        <span class="text-muted"><span>@</span>{{ auth()->user()->username ?? '' }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
-        <div class="menu-footer">
-            <div class="flex items-center gap-3 rounded-xl bg-white/5 p-3">
-                <div class="h-9 w-9 rounded-full bg-gradient-to-br from-fuchsia-500 to-cyan-400 flex items-center justify-center text-xs font-bold text-white">
-                    {{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}
+                        {{-- Navigation --}}
+                        <ul class="nav flex-column user-side-menu">
+                            <li class="nav-item">
+                                <a href="/" class="h-pill h-pill-primary nav-link {{ $currentPath === '/' ? 'active' : '' }} d-flex justify-content-between">
+                                    <div class="d-flex justify-content-center align-items-center">
+                                        <div class="icon-wrapper d-flex justify-content-center align-items-center">
+                                            <svg class="icon-large" viewBox="0 0 512 512" fill="none" stroke="currentColor" stroke-width="32"><path d="M80 212v236a16 16 0 0016 16h96V328a24 24 0 0124-24h80a24 24 0 0124 24v136h96a16 16 0 0016-16V212" stroke-linecap="round" stroke-linejoin="round"/><path d="M480 256L266.89 52c-5-5.28-16.69-5.34-21.78 0L32 256" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                        </div>
+                                        <span class="d-none d-lg-block ml-2 text-truncate side-menu-label">Ana Sayfa</span>
+                                    </div>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="/notifications" class="nav-link h-pill h-pill-primary {{ str_starts_with($currentPath, 'notifications') ? 'active' : '' }} d-flex justify-content-between">
+                                    <div class="d-flex justify-content-center align-items-center">
+                                        <div class="icon-wrapper d-flex justify-content-center align-items-center position-relative">
+                                            <svg class="icon-large" viewBox="0 0 512 512" fill="none" stroke="currentColor" stroke-width="32"><path d="M427.68 351.13C402 320 383.87 304 383.87 217.27 383.87 138 343.35 109.73 310 96c-4.43-1.82-8.6-6-9.95-10.55C294.2 65.54 277.8 48 256 48s-38.21 17.55-44 37.47c-1.35 4.6-5.52 8.71-9.95 10.53-33.39 13.75-73.87 41.92-73.87 121.27 0 86.75-18.18 102.77-44.12 133.92C71.82 366.47 81.61 384 104.43 384h303.14c22.52 0 32.59-17.55 20.11-32.87z" stroke-linecap="round" stroke-linejoin="round"/><path d="M320 384v16a64 64 0 01-128 0v-16" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                            <div class="menu-notification-badge d-none" id="notif-badge-desktop">0</div>
+                                        </div>
+                                        <span class="d-none d-lg-block ml-2 text-truncate side-menu-label">Bildirimler</span>
+                                    </div>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="/inbox" class="nav-link h-pill h-pill-primary {{ str_starts_with($currentPath, 'inbox') ? 'active' : '' }} d-flex justify-content-between">
+                                    <div class="d-flex justify-content-center align-items-center">
+                                        <div class="icon-wrapper d-flex justify-content-center align-items-center position-relative">
+                                            <svg class="icon-large" viewBox="0 0 512 512" fill="none" stroke="currentColor" stroke-width="32"><path d="M408 64H104a56.16 56.16 0 00-56 56v192a56.16 56.16 0 0056 56h40v80l93.72-78.14a8 8 0 015.13-1.86H408a56.16 56.16 0 0056-56V120a56.16 56.16 0 00-56-56z" stroke-linejoin="round"/></svg>
+                                            <div class="menu-notification-badge d-none" id="msg-badge-desktop">0</div>
+                                        </div>
+                                        <span class="d-none d-lg-block ml-2 text-truncate side-menu-label">Mesajlar</span>
+                                    </div>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="/bookmarks" class="nav-link {{ str_starts_with($currentPath, 'bookmarks') ? 'active' : '' }} h-pill h-pill-primary d-flex justify-content-between">
+                                    <div class="d-flex justify-content-center align-items-center">
+                                        <div class="icon-wrapper d-flex justify-content-center align-items-center">
+                                            <svg class="icon-large" viewBox="0 0 512 512" fill="none" stroke="currentColor" stroke-width="32"><path d="M352 48H160a48 48 0 00-48 48v368l144-128 144 128V96a48 48 0 00-48-48z" stroke-linejoin="round"/></svg>
+                                        </div>
+                                        <span class="d-none d-lg-block ml-2 text-truncate side-menu-label">Kaydedilenler</span>
+                                    </div>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="/explore" class="nav-link {{ str_starts_with($currentPath, 'explore') ? 'active' : '' }} h-pill h-pill-primary d-flex justify-content-between">
+                                    <div class="d-flex justify-content-center align-items-center">
+                                        <div class="icon-wrapper d-flex justify-content-center align-items-center">
+                                            <svg class="icon-large" viewBox="0 0 512 512" fill="none" stroke="currentColor" stroke-width="32"><circle cx="256" cy="256" r="208"/><path d="M200 153.4c55.45-25.36 126.87-7.4 152.1 48s-.1 127.46-55.45 152.82S169.78 361.6 144.55 306.17 144.55 178.77 200 153.4z"/></svg>
+                                        </div>
+                                        <span class="d-none d-lg-block ml-2 text-truncate side-menu-label">Keşfet</span>
+                                    </div>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="/profile" class="nav-link {{ str_starts_with($currentPath, 'profile') ? 'active' : '' }} h-pill h-pill-primary d-flex justify-content-between">
+                                    <div class="d-flex justify-content-center align-items-center">
+                                        <div class="icon-wrapper d-flex justify-content-center align-items-center">
+                                            <svg class="icon-large" viewBox="0 0 512 512" fill="none" stroke="currentColor" stroke-width="32"><path d="M344 144c-3.92 52.87-44 96-88 96s-84.15-43.12-88-96c-4-55 35-96 88-96s92 42 88 96z" stroke-linecap="round" stroke-linejoin="round"/><path d="M256 304c-87 0-175.3 48-191.64 138.6C62.39 453.52 68.57 464 80 464h352c11.44 0 17.62-10.48 15.65-21.4C431.3 352 343 304 256 304z" stroke-miterlimit="10"/></svg>
+                                        </div>
+                                        <span class="d-none d-lg-block ml-2 text-truncate side-menu-label">Profil</span>
+                                    </div>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="#" class="nav-link h-pill h-pill-primary text-muted d-flex justify-content-between open-menu">
+                                    <div class="d-flex justify-content-center align-items-center">
+                                        <div class="icon-wrapper d-flex justify-content-center align-items-center">
+                                            <svg class="icon-large" viewBox="0 0 512 512" fill="none" stroke="currentColor" stroke-width="32"><circle cx="256" cy="256" r="26"/><circle cx="346" cy="256" r="26"/><circle cx="166" cy="256" r="26"/></svg>
+                                        </div>
+                                        <span class="d-none d-lg-block ml-2 text-truncate side-menu-label">Daha Fazla</span>
+                                    </div>
+                                </a>
+                            </li>
+                            {{-- New Post CTA --}}
+                            <li class="nav-item mt-3">
+                                <a role="button" class="btn btn-round btn-primary btn-block" href="/create">
+                                    <span class="d-none d-lg-block text-truncate new-post-label">Yeni Gönderi</span>
+                                    <span class="d-block d-lg-none d-flex align-items-center justify-content-center">
+                                        <svg class="icon-medium" viewBox="0 0 512 512" fill="none" stroke="currentColor" stroke-width="32"><path d="M256 112v288M400 256H112" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                    </span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
-                <div class="min-w-0 flex-1">
-                    <p class="text-xs font-semibold truncate">{{ auth()->user()->name ?? 'Misafir' }}</p>
-                    <p class="text-[10px] text-slate-500 truncate">{{ auth()->user()->email ?? '' }}</p>
+
+                {{-- ── Main Content Column (col-12/col-md-9) ─────────── --}}
+                <div class="col-12 col-md-9 min-vh-100 border-left px-0 content-wrapper">
+                    @yield('content')
+                </div>
+            </div>
+
+            {{-- ── Mobile Bottom Nav ──────────────────────────────────── --}}
+            <div class="d-block d-md-none fixed-bottom" data-nav="bottom">
+                <div class="mobile-bottom-nav border-top z-index-3 py-1 neutral-bg">
+                    <div class="d-flex justify-content-between w-100 py-2 px-2">
+                        <a href="/" class="h-pill h-pill-primary nav-link d-flex justify-content-between px-3 {{ $currentPath === '/' ? 'active' : '' }}">
+                            <div class="d-flex justify-content-center align-items-center">
+                                <div class="icon-wrapper d-flex justify-content-center align-items-center">
+                                    <svg class="icon-large" viewBox="0 0 512 512" fill="none" stroke="currentColor" stroke-width="32"><path d="M80 212v236a16 16 0 0016 16h96V328a24 24 0 0124-24h80a24 24 0 0124 24v136h96a16 16 0 0016-16V212" stroke-linecap="round" stroke-linejoin="round"/><path d="M480 256L266.89 52c-5-5.28-16.69-5.34-21.78 0L32 256" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                </div>
+                            </div>
+                        </a>
+                        <a href="/notifications" class="h-pill h-pill-primary nav-link d-flex justify-content-between px-3 {{ str_starts_with($currentPath, 'notifications') ? 'active' : '' }}">
+                            <div class="d-flex justify-content-center align-items-center">
+                                <div class="icon-wrapper d-flex justify-content-center align-items-center position-relative">
+                                    <svg class="icon-large" viewBox="0 0 512 512" fill="none" stroke="currentColor" stroke-width="32"><path d="M427.68 351.13C402 320 383.87 304 383.87 217.27 383.87 138 343.35 109.73 310 96c-4.43-1.82-8.6-6-9.95-10.55C294.2 65.54 277.8 48 256 48s-38.21 17.55-44 37.47c-1.35 4.6-5.52 8.71-9.95 10.53-33.39 13.75-73.87 41.92-73.87 121.27 0 86.75-18.18 102.77-44.12 133.92C71.82 366.47 81.61 384 104.43 384h303.14c22.52 0 32.59-17.55 20.11-32.87z" stroke-linecap="round" stroke-linejoin="round"/><path d="M320 384v16a64 64 0 01-128 0v-16" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                    <div class="menu-notification-badge d-none" id="notif-badge-mobile">0</div>
+                                </div>
+                            </div>
+                        </a>
+                        <a href="/create" class="h-pill h-pill-primary nav-link d-flex justify-content-between px-3 {{ str_starts_with($currentPath, 'create') ? 'active' : '' }}">
+                            <div class="d-flex justify-content-center align-items-center">
+                                <div class="icon-wrapper d-flex justify-content-center align-items-center">
+                                    <svg class="icon-large" viewBox="0 0 512 512" fill="none" stroke="currentColor" stroke-width="32"><path d="M448 256c0-106-86-192-192-192S64 150 64 256s86 192 192 192 192-86 192-192z"/><path d="M256 176v160M336 256H176" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                </div>
+                            </div>
+                        </a>
+                        <a href="/inbox" class="h-pill h-pill-primary nav-link d-flex justify-content-between px-3 {{ str_starts_with($currentPath, 'inbox') ? 'active' : '' }}">
+                            <div class="d-flex justify-content-center align-items-center">
+                                <div class="icon-wrapper d-flex justify-content-center align-items-center position-relative">
+                                    <svg class="icon-large" viewBox="0 0 512 512" fill="none" stroke="currentColor" stroke-width="32"><path d="M408 64H104a56.16 56.16 0 00-56 56v192a56.16 56.16 0 0056 56h40v80l93.72-78.14a8 8 0 015.13-1.86H408a56.16 56.16 0 0056-56V120a56.16 56.16 0 00-56-56z" stroke-linejoin="round"/></svg>
+                                    <div class="menu-notification-badge d-none" id="msg-badge-mobile">0</div>
+                                </div>
+                            </div>
+                        </a>
+                        <a href="/profile" class="h-pill h-pill-primary nav-link d-flex justify-content-between px-3">
+                            <div class="d-flex justify-content-center align-items-center">
+                                <div class="icon-wrapper d-flex justify-content-center align-items-center">
+                                    <div class="user-avatar rounded-circle w-32 d-flex align-items-center justify-content-center mobile-nav-avatar">
+                                        {{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
-    </aside>
-
-    {{-- ── Main Content ──────────────────────────────────────────────── --}}
-    <div class="main-content">
-        @yield('content')
     </div>
 
-    {{-- ── Mobile Bottom Nav ─────────────────────────────────────────── --}}
-    <nav class="bottom-nav" data-nav="bottom">
-        <div class="nav-items">
-            <a href="/"          class="nav-item {{ $currentPath === '/' ? 'active' : '' }}"><span class="nav-icon">🏠</span><span class="nav-label">Ana Sayfa</span></a>
-            <a href="/explore"   class="nav-item {{ str_starts_with($currentPath, 'explore') ? 'active' : '' }}"><span class="nav-icon">🔍</span><span class="nav-label">Keşfet</span></a>
-            <a href="/create"    class="nav-item {{ str_starts_with($currentPath, 'create') ? 'active' : '' }}"><span class="nav-icon">➕</span><span class="nav-label">Oluştur</span></a>
-            <a href="/notifications" class="nav-item {{ str_starts_with($currentPath, 'notifications') ? 'active' : '' }}"><span class="nav-icon">🔔</span><span class="nav-label">Bildirim</span></a>
-            <a href="/profile"   class="nav-item {{ str_starts_with($currentPath, 'profile') ? 'active' : '' }}"><span class="nav-icon">👤</span><span class="nav-label">Profil</span></a>
-        </div>
-    </nav>
-
     {{-- ── Global Elements ───────────────────────────────────────────── --}}
-    <div id="toast-root" class="fixed top-4 right-4 z-50 space-y-3"></div>
+    <div id="toast-root" class="toast-container top-right"></div>
 
     @include('components.tier-modal')
     @include('components.payment-modal')

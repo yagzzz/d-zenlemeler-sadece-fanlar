@@ -2,24 +2,24 @@
 
 @section('content')
 <div class="content-column" data-page="notifications">
-    <div class="flex items-center justify-between mb-6">
+    <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h1 class="text-xl font-bold">Bildirimler</h1>
-            <p class="text-sm text-slate-400">Aktivite ve güncellemeler.</p>
+            <h1 class="text-bold" style="font-size:1.25rem;">Bildirimler</h1>
+            <p class="text-muted" style="font-size:0.875rem;">Aktivite ve güncellemeler.</p>
         </div>
-        <button id="mark-all-read" class="btn-ghost text-xs">Tümünü Okundu İşaretle</button>
+        <button id="mark-all-read" class="btn btn-ghost" style="font-size:0.75rem;">Tümünü Okundu İşaretle</button>
     </div>
 
-    <div id="notifications-list" class="post-box divide-y divide-white/5 overflow-hidden">
-        <div class="p-6 text-center">
-            <p class="text-sm text-slate-400">Bildirimler yükleniyor…</p>
+    <div id="notifications-list" class="post-box overflow-hidden">
+        <div class="p-5 text-center">
+            <p class="text-muted" style="font-size:0.875rem;">Bildirimler yükleniyor…</p>
         </div>
     </div>
 
-    <div id="notifications-empty" class="hidden post-box p-8 text-center">
-        <p class="text-3xl">🔔</p>
-        <h2 class="mt-3 text-base font-semibold">Bildirim yok</h2>
-        <p class="mt-1 text-sm text-slate-400">Yeni bir şey olduğunda burada görünecek.</p>
+    <div id="notifications-empty" class="hidden post-box p-6 text-center">
+        <p style="font-size:2rem;">🔔</p>
+        <h2 class="mt-2 text-bold" style="font-size:1rem;">Bildirim yok</h2>
+        <p class="mt-1 text-muted" style="font-size:0.875rem;">Yeni bir şey olduğunda burada görünecek.</p>
     </div>
 </div>
 @endsection

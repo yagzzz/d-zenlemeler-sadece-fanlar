@@ -1,67 +1,67 @@
 @extends('layouts.app')
 
 @section('content')
-<div data-page="creator" data-username="{{ $username }}" data-profile-endpoint="/api/creators/{{ $username }}/profile" data-contents-endpoint="/creators/{{ $username }}/contents" data-tiers-endpoint="{{ config('features.flags.tiers') ? '/creators/'.$username.'/tiers' : '' }}" data-analytics-endpoint="{{ config('features.flags.analytics_stub') ? '/api/creators/'.$username.'/analytics' : '' }}">
+<div data-page="creator" data-username="{{ $username }}" data-profile-endpoint="/creators/{{ $username }}/profile" data-contents-endpoint="/creators/{{ $username }}/contents" data-tiers-endpoint="{{ config('features.flags.tiers') ? '/creators/'.$username.'/tiers' : '' }}" data-analytics-endpoint="{{ config('features.flags.analytics_stub') ? '/api/creators/'.$username.'/analytics' : '' }}">
     @if (!config('features.flags.ui'))
-        <div class="content-column"><div class="post-box p-6"><p class="text-sm font-semibold">Feature disabled</p></div></div>
+        <div class="content-column"><div class="post-box p-4"><p class="text-bold">Feature disabled</p></div></div>
     @else
         {{-- Cover --}}
         <div class="profile-cover">
-            <div class="absolute inset-0 bg-gradient-to-r from-fuchsia-500/30 via-transparent to-cyan-400/20"></div>
+            <div style="position:absolute;inset:0;background:linear-gradient(to right,rgba(217,70,239,0.3),transparent,rgba(34,211,238,0.2));"></div>
         </div>
 
-        <div class="content-column -mt-6">
+        <div class="content-column" style="margin-top:-1.5rem;">
             {{-- Avatar + Info --}}
-            <div class="flex items-end gap-4 mb-4">
+            <div class="d-flex align-items-end gap-3 mb-3">
                 <div id="creator-avatar" class="profile-avatar">{{ strtoupper(substr($username, 0, 1)) }}</div>
-                <div class="flex-1 pb-1">
-                    <h1 id="creator-name" class="text-xl font-bold">{{ $username }}</h1>
-                    <p class="text-sm text-slate-400">@{{ $username }}</p>
+                <div style="flex:1;padding-bottom:0.25rem;">
+                    <h1 id="creator-name" class="text-bold" style="font-size:1.25rem;">{{ $username }}</h1>
+                    <p class="text-muted" style="font-size:0.875rem;">@{{ $username }}</p>
                 </div>
             </div>
 
-            <p id="creator-tagline" class="text-sm text-slate-300 mb-4">Premium içerikler burada.</p>
+            <p id="creator-tagline" class="text-muted mb-3" style="font-size:0.875rem;">Premium içerikler burada.</p>
 
             {{-- Action Buttons --}}
-            <div class="flex gap-3 mb-6">
-                <button id="subscribe-cta" class="btn-primary flex-1 py-3">Abone Ol</button>
-                <button id="tip-cta" class="btn-outline flex-1 py-3">💎 Tip Gönder</button>
+            <div class="d-flex gap-3 mb-4">
+                <button id="subscribe-cta" class="btn btn-primary" style="flex:1;padding:0.75rem;">Abone Ol</button>
+                <button id="tip-cta" class="btn btn-outline" style="flex:1;padding:0.75rem;">💎 Tip Gönder</button>
             </div>
 
             {{-- Stats --}}
-            <div class="grid grid-cols-3 gap-3 mb-6">
-                <div class="rounded-xl bg-white/5 border border-white/5 p-3 text-center">
-                    <p id="creator-tips-total" class="text-base font-semibold">0 XMR</p>
-                    <p id="creator-tips-count" class="text-[10px] text-slate-500">0 tip</p>
+            <div class="d-flex gap-3 mb-4" style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.75rem;">
+                <div class="stat-card">
+                    <p id="creator-tips-total" class="text-bold" style="font-size:1rem;">0 XMR</p>
+                    <p id="creator-tips-count" class="text-muted" style="font-size:0.625rem;">0 tip</p>
                 </div>
-                <div class="rounded-xl bg-white/5 border border-white/5 p-3 text-center">
-                    <p id="creator-subscribers" class="text-base font-semibold">0</p>
-                    <p class="text-[10px] text-slate-500">Abone</p>
+                <div class="stat-card">
+                    <p id="creator-subscribers" class="text-bold" style="font-size:1rem;">0</p>
+                    <p class="text-muted" style="font-size:0.625rem;">Abone</p>
                 </div>
-                <div class="rounded-xl bg-white/5 border border-white/5 p-3 text-center">
-                    <p id="creator-post-count" class="text-base font-semibold">—</p>
-                    <p class="text-[10px] text-slate-500">İçerik</p>
+                <div class="stat-card">
+                    <p id="creator-post-count" class="text-bold" style="font-size:1rem;">—</p>
+                    <p class="text-muted" style="font-size:0.625rem;">İçerik</p>
                 </div>
             </div>
 
             {{-- Tab Nav --}}
-            <div class="flex gap-1 mb-6 border-b border-white/5">
-                <button class="tab-btn px-4 py-2.5 text-sm font-medium border-b-2 border-fuchsia-500 text-white" data-tab="posts">Gönderiler</button>
-                <button class="tab-btn px-4 py-2.5 text-sm font-medium border-b-2 border-transparent text-slate-400 hover:text-white" data-tab="tiers">Tier'ler</button>
+            <div class="d-flex gap-1 mb-4" style="border-bottom:1px solid rgba(255,255,255,0.06);">
+                <button class="tab-btn active" data-tab="posts">Gönderiler</button>
+                <button class="tab-btn" data-tab="tiers">Tier'ler</button>
             </div>
 
             {{-- Tab: Posts --}}
-            <div id="tab-posts" class="space-y-4">
-                <div id="creator-contents" class="space-y-4"></div>
+            <div id="tab-posts">
+                <div id="creator-contents" class="posts-wrapper"></div>
             </div>
 
             {{-- Tab: Tiers --}}
             <div id="tab-tiers" class="hidden">
-                <div class="flex items-center justify-between mb-3">
-                    <h2 class="text-base font-semibold">Planlar</h2>
-                    <button id="compare-tiers" class="text-xs text-slate-400 hover:text-white">Karşılaştır</button>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h2 class="text-bold" style="font-size:1rem;">Planlar</h2>
+                    <button id="compare-tiers" class="btn-ghost" style="font-size:0.75rem;">Karşılaştır</button>
                 </div>
-                <div id="creator-tiers" class="grid gap-4 md:grid-cols-2"></div>
+                <div id="creator-tiers" style="display:grid;gap:1rem;"></div>
             </div>
         </div>
     @endif

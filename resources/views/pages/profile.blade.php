@@ -2,54 +2,54 @@
 
 @section('content')
 <div class="content-column" data-page="profile">
-    <div class="mb-6">
-        <h1 class="text-xl font-bold">Profil</h1>
-        <p class="text-sm text-slate-400">Hesap ayarlarını yönet.</p>
+    <div class="mb-4">
+        <h1 class="text-bold" style="font-size:1.25rem;">Profil</h1>
+        <p class="text-muted" style="font-size:0.875rem;">Hesap ayarlarını yönet.</p>
     </div>
 
     {{-- Profile Card --}}
-    <div class="post-box p-5 mb-4" data-testid="profile-card">
-        <div class="flex items-center gap-4">
-            <div class="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-fuchsia-500 to-cyan-400 text-lg font-bold text-white">
+    <div class="post-box p-4 mb-3" data-testid="profile-card">
+        <div class="d-flex align-items-center gap-3">
+            <div style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#d946ef,#22d3ee);display:flex;align-items:center;justify-content:center;font-size:1.25rem;font-weight:700;color:white;">
                 {{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}
             </div>
             <div>
-                <p class="text-base font-semibold">{{ auth()->user()->name ?? 'Kullanıcı' }}</p>
-                <p class="text-sm text-slate-400">{{ auth()->user()->email ?? '—' }}</p>
-                <span class="mt-1 inline-block rounded-full bg-white/10 px-3 py-0.5 text-xs text-slate-300">{{ auth()->user()->role ?? 'user' }}</span>
+                <p class="text-bold" style="font-size:1rem;">{{ auth()->user()->name ?? 'Kullanıcı' }}</p>
+                <p class="text-muted" style="font-size:0.875rem;">{{ auth()->user()->email ?? '—' }}</p>
+                <span style="display:inline-block;border-radius:9999px;background:rgba(255,255,255,0.1);padding:0.125rem 0.75rem;font-size:0.75rem;color:#cbd5e1;margin-top:0.25rem;">{{ auth()->user()->role ?? 'user' }}</span>
             </div>
         </div>
     </div>
 
     {{-- Settings --}}
-    <div class="space-y-4" data-testid="profile-settings">
-        <div class="post-box p-5">
-            <h3 class="text-sm font-semibold mb-4">Hesap Bilgileri</h3>
-            <div class="space-y-3">
+    <div style="display:flex;flex-direction:column;gap:1rem;" data-testid="profile-settings">
+        <div class="settings-card">
+            <h3 class="text-bold mb-3" style="font-size:0.875rem;">Hesap Bilgileri</h3>
+            <div style="display:flex;flex-direction:column;gap:0.75rem;">
                 <div>
-                    <label class="text-xs uppercase tracking-widest text-slate-400">İsim</label>
+                    <label class="text-muted" style="font-size:0.625rem;text-transform:uppercase;letter-spacing:0.1em;">İsim</label>
                     <input type="text" value="{{ auth()->user()->name ?? '' }}" class="sf-input mt-1" />
                 </div>
                 <div>
-                    <label class="text-xs uppercase tracking-widest text-slate-400">Kullanıcı Adı</label>
+                    <label class="text-muted" style="font-size:0.625rem;text-transform:uppercase;letter-spacing:0.1em;">Kullanıcı Adı</label>
                     <input type="text" value="{{ auth()->user()->username ?? '' }}" class="sf-input mt-1" />
                 </div>
                 <div>
-                    <label class="text-xs uppercase tracking-widest text-slate-400">E-posta</label>
-                    <input type="email" value="{{ auth()->user()->email ?? '' }}" class="sf-input mt-1 text-slate-400" disabled />
+                    <label class="text-muted" style="font-size:0.625rem;text-transform:uppercase;letter-spacing:0.1em;">E-posta</label>
+                    <input type="email" value="{{ auth()->user()->email ?? '' }}" class="sf-input mt-1" style="color:#64748b;" disabled />
                 </div>
             </div>
-            <button class="mt-4 btn-outline text-xs">Kaydet</button>
+            <button class="btn btn-outline mt-3" style="font-size:0.75rem;">Kaydet</button>
         </div>
 
-        <div class="post-box p-5">
-            <h3 class="text-sm font-semibold mb-4">Bildirimler</h3>
-            <div class="space-y-3">
+        <div class="settings-card">
+            <h3 class="text-bold mb-3" style="font-size:0.875rem;">Bildirimler</h3>
+            <div style="display:flex;flex-direction:column;gap:0.75rem;">
                 @foreach (['Yeni abonelik', 'Tip bildirimi', 'Yeni mesaj'] as $notif)
-                    <label class="flex items-center justify-between cursor-pointer">
-                        <span class="text-sm text-slate-300">{{ $notif }}</span>
-                        <div class="relative h-6 w-11 rounded-full bg-white/10">
-                            <div class="absolute left-1 top-1 h-4 w-4 rounded-full bg-fuchsia-400 transition-transform"></div>
+                    <label class="d-flex justify-content-between align-items-center pointer-cursor">
+                        <span style="font-size:0.875rem;color:#cbd5e1;">{{ $notif }}</span>
+                        <div style="position:relative;height:24px;width:44px;border-radius:9999px;background:rgba(255,255,255,0.1);">
+                            <div style="position:absolute;left:4px;top:4px;width:16px;height:16px;border-radius:50%;background:#d946ef;transition:transform 0.2s;"></div>
                         </div>
                     </label>
                 @endforeach
@@ -57,17 +57,17 @@
         </div>
 
         @if (auth()->user()?->role === 'user')
-            <div class="rounded-xl border border-fuchsia-400/20 bg-fuchsia-500/5 p-5">
-                <h3 class="text-sm font-semibold">Creator Ol</h3>
-                <p class="mt-2 text-xs text-slate-400">Creator başvurusu yaparak kendi içeriklerini paylaşmaya başla.</p>
-                <button class="mt-3 btn-primary text-xs">Başvur</button>
+            <div class="creator-apply-zone">
+                <h3 class="text-bold" style="font-size:0.875rem;">Creator Ol</h3>
+                <p class="mt-2 text-muted" style="font-size:0.75rem;">Creator başvurusu yaparak kendi içeriklerini paylaşmaya başla.</p>
+                <button class="btn btn-primary mt-2" style="font-size:0.75rem;">Başvur</button>
             </div>
         @endif
 
-        <div class="rounded-xl border border-rose-400/20 bg-rose-500/5 p-5">
-            <h3 class="text-sm font-semibold text-rose-300">Tehlikeli Bölge</h3>
-            <p class="mt-2 text-xs text-slate-400">Hesabını kalıcı olarak sil. Bu işlem geri alınamaz.</p>
-            <button class="mt-3 rounded-xl border border-rose-400/30 px-5 py-2 text-xs font-semibold text-rose-300 hover:bg-rose-500/10 transition-colors">Hesabı Sil</button>
+        <div class="danger-zone">
+            <h3 class="text-bold" style="font-size:0.875rem;color:#fda4af;">Tehlikeli Bölge</h3>
+            <p class="mt-2 text-muted" style="font-size:0.75rem;">Hesabını kalıcı olarak sil. Bu işlem geri alınamaz.</p>
+            <button class="btn btn-outline mt-2" style="font-size:0.75rem;border-color:rgba(244,63,94,0.3);color:#fda4af;">Hesabı Sil</button>
         </div>
     </div>
 </div>
