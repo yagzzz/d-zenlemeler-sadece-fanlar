@@ -56,7 +56,7 @@ it('returns creator analytics payload', function () {
         'ends_at' => now()->addDay(),
     ]);
 
-    $response = $this->getJson('/api/creators/demo-creator/analytics');
+    $response = $this->actingAs($creator)->getJson('/api/creators/demo-creator/analytics');
 
     $response->assertOk();
     $response->assertJsonStructure([
@@ -85,5 +85,5 @@ it('gates admin creator applications page', function () {
     $this->actingAs($admin)
         ->get('/admin/creator-applications')
         ->assertOk()
-        ->assertSee('Creator Applications');
+        ->assertSee('Creator Başvuruları');
 });

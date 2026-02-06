@@ -28,18 +28,18 @@
             <div style="display:flex;flex-direction:column;gap:0.75rem;">
                 <div>
                     <label class="text-muted" style="font-size:0.625rem;text-transform:uppercase;letter-spacing:0.1em;">İsim</label>
-                    <input type="text" value="{{ auth()->user()->name ?? '' }}" class="sf-input mt-1" />
+                    <input type="text" id="settings-name" value="{{ auth()->user()->name ?? '' }}" class="sf-input mt-1" />
                 </div>
                 <div>
                     <label class="text-muted" style="font-size:0.625rem;text-transform:uppercase;letter-spacing:0.1em;">Kullanıcı Adı</label>
-                    <input type="text" value="{{ auth()->user()->username ?? '' }}" class="sf-input mt-1" />
+                    <input type="text" id="settings-username" value="{{ auth()->user()->username ?? '' }}" class="sf-input mt-1" />
                 </div>
                 <div>
                     <label class="text-muted" style="font-size:0.625rem;text-transform:uppercase;letter-spacing:0.1em;">E-posta</label>
                     <input type="email" value="{{ auth()->user()->email ?? '' }}" class="sf-input mt-1" style="color:#64748b;" disabled />
                 </div>
             </div>
-            <button class="btn btn-outline mt-3" style="font-size:0.75rem;">Kaydet</button>
+            <button id="save-settings-btn" class="btn btn-outline mt-3" style="font-size:0.75rem;">Kaydet</button>
         </div>
 
         <div class="settings-card">
@@ -60,14 +60,14 @@
             <div class="creator-apply-zone">
                 <h3 class="text-bold" style="font-size:0.875rem;">Creator Ol</h3>
                 <p class="mt-2 text-muted" style="font-size:0.75rem;">Creator başvurusu yaparak kendi içeriklerini paylaşmaya başla.</p>
-                <button class="btn btn-primary mt-2" style="font-size:0.75rem;">Başvur</button>
+                <button id="creator-apply-btn" class="btn btn-primary mt-2" style="font-size:0.75rem;">Başvur</button>
             </div>
         @endif
 
         <div class="danger-zone">
             <h3 class="text-bold" style="font-size:0.875rem;color:#fda4af;">Tehlikeli Bölge</h3>
             <p class="mt-2 text-muted" style="font-size:0.75rem;">Hesabını kalıcı olarak sil. Bu işlem geri alınamaz.</p>
-            <button class="btn btn-outline mt-2" style="font-size:0.75rem;border-color:rgba(244,63,94,0.3);color:#fda4af;">Hesabı Sil</button>
+            <button id="delete-account-btn" class="btn btn-outline mt-2" style="font-size:0.75rem;border-color:rgba(244,63,94,0.3);color:#fda4af;">Hesabı Sil</button>
         </div>
     </div>
 </div>

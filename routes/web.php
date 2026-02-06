@@ -1,6 +1,9 @@
 <?php
 
+use App\Http\Controllers\AccountController;
 use App\Http\Controllers\Admin\CreatorApplicationController as AdminCreatorApplicationController;
+use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\BookmarkController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\ContentController;
@@ -12,6 +15,7 @@ use App\Http\Controllers\CreatorMediaController;
 use App\Http\Controllers\CreatorProfileController;
 use App\Http\Controllers\CreatorTierController;
 use App\Http\Controllers\DraftController;
+use App\Http\Controllers\ExploreController;
 use App\Http\Controllers\FeedController;
 use App\Http\Controllers\MediaController;
 use App\Http\Controllers\NotificationController;
@@ -22,35 +26,29 @@ use App\Http\Controllers\PublicCreatorTiersController;
 use App\Http\Controllers\ReactionController;
 use App\Http\Controllers\SubscriptionTierController;
 use App\Http\Controllers\TipController;
+use App\Http\Controllers\UserSettingsController;
 use Illuminate\Support\Facades\Route;
 
+/* ══════════════════════════════════════════════════════════════════════
+   Auth Routes (guest only for login/register forms)
+   ══════════════════════════════════════════════════════════════════════ */
+Route::middleware('guest')->group(function () {
+    Route::get('/login', [LoginController::class, 'show'])->name('login');
+    Route::post('/login', [LoginController::class, 'store']);
+    Route::get('/register', [RegisterController::class, 'show'])->name('register');
+    Route::post('/register', [RegisterController::class, 'store']);
+});
+
+Route::post('/logout', [LoginController::class, 'destroy'])->middleware('auth')->name('logout');
+
+/* ══════════════════════════════════════════════════════════════════════
+   Public Pages (no auth required)
+   ══════════════════════════════════════════════════════════════════════ */
 Route::get('/', function () {
     return view('feed.index');
 });
 
-Route::get('/explore', function () {
-    return view('pages.explore');
-});
-
-Route::get('/create', function () {
-    return view('pages.create');
-});
-
-Route::get('/inbox', function () {
-    return view('pages.inbox');
-});
-
-Route::get('/profile', function () {
-    return view('pages.profile');
-});
-
-Route::get('/notifications', function () {
-    return view('pages.notifications');
-});
-
-Route::get('/bookmarks', function () {
-    return view('pages.bookmarks');
-});
+Route::get('/explore', [ExploreController::class, 'index']);
 
 Route::get('/health', function () {
     return response()->json(['status' => 'ok']);
@@ -58,6 +56,39 @@ Route::get('/health', function () {
 
 Route::get('/c/{username}', function (string $username) {
     return view('creator.show', ['username' => $username]);
+});
+
+/* ══════════════════════════════════════════════════════════════════════
+   Authenticated Page Routes
+   ══════════════════════════════════════════════════════════════════════ */
+Route::middleware('auth')->group(function () {
+    Route::get('/create', function () {
+        return view('pages.create');
+    });
+
+    Route::get('/inbox', function () {
+        return view('pages.inbox');
+    });
+
+    Route::get('/profile', function () {
+        return view('pages.profile');
+    });
+
+    Route::get('/notifications', function () {
+        return view('pages.notifications');
+    });
+
+    Route::get('/bookmarks', function () {
+        return view('pages.bookmarks');
+    });
+});
+
+/* ══════════════════════════════════════════════════════════════════════
+   User Settings & Account
+   ══════════════════════════════════════════════════════════════════════ */
+Route::middleware('auth')->group(function () {
+    Route::put('/api/user/settings', [UserSettingsController::class, 'update']);
+    Route::delete('/api/account', [AccountController::class, 'destroy']);
 });
 
 Route::middleware(['auth', 'feature:creator_applications'])
@@ -77,6 +108,7 @@ Route::prefix('creator')
         Route::post('/content', [CreatorContentController::class, 'store']);
         Route::patch('/content/{content}', [CreatorContentController::class, 'update']);
         Route::post('/content/{content}/publish', [CreatorContentController::class, 'publish']);
+        Route::delete('/content/{content}', [CreatorContentController::class, 'destroy']);
     });
 
 Route::prefix('creator')
@@ -159,7 +191,7 @@ Route::prefix('api')
     });
 
 Route::prefix('api')
-    ->middleware(['feature:analytics_stub'])
+    ->middleware(['auth', 'feature:analytics_stub'])
     ->group(function () {
         Route::get('/creators/{username}/analytics', [CreatorAnalyticsController::class, 'show']);
     });

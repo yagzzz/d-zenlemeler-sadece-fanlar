@@ -65,7 +65,8 @@ it('side-menu user-details has avatar', function () {
 });
 
 it('side-menu has new post CTA button', function () {
-    $html = $this->get('/')->getContent();
+    $user = \App\Models\User::factory()->create();
+    $html = $this->actingAs($user)->get('/')->getContent();
 
     expect($html)->toContain('Yeni Gönderi');
     expect($html)->toContain('btn-round btn-primary');
@@ -233,7 +234,8 @@ it('explore page has creator card grid', function () {
    ═══════════════════════════════════════════════════════════════════════ */
 
 it('create page has upload zone with drag-drop', function () {
-    $html = $this->get('/create')->getContent();
+    $user = \App\Models\User::factory()->create();
+    $html = $this->actingAs($user)->get('/create')->getContent();
 
     expect($html)->toContain('upload-zone');
     expect($html)->toContain('upload-previews');
@@ -241,7 +243,8 @@ it('create page has upload zone with drag-drop', function () {
 });
 
 it('create page has PPV price row', function () {
-    $html = $this->get('/create')->getContent();
+    $user = \App\Models\User::factory()->create();
+    $html = $this->actingAs($user)->get('/create')->getContent();
 
     expect($html)->toContain('ppv-price-row');
     expect($html)->toContain('ppv_price_atomic');

@@ -1,48 +1,46 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="mx-auto max-w-4xl px-6 py-8">
-    <div class="flex items-center justify-between mb-6">
-        <div>
-            <p class="text-xs uppercase tracking-[0.3em] text-slate-500">Admin</p>
-            <h1 class="text-3xl font-semibold">Creator Applications</h1>
-        </div>
+<div class="content-column" data-page="admin-applications">
+    <div class="mb-4">
+        <p class="text-muted" style="font-size:0.625rem;text-transform:uppercase;letter-spacing:0.3em;">Yönetim Paneli</p>
+        <h1 class="text-bold" style="font-size:1.25rem;">Creator Başvuruları</h1>
     </div>
 
-    <div class="rounded-3xl border border-white/10 bg-white/5 p-6">
-        <table class="w-full text-sm">
-            <thead class="text-left text-slate-400">
-                <tr>
-                    <th class="pb-3">User</th>
-                    <th class="pb-3">Status</th>
-                    <th class="pb-3">Submitted</th>
-                    <th class="pb-3">Actions</th>
+    <div class="post-box p-4">
+        <table style="width:100%;font-size:0.875rem;">
+            <thead>
+                <tr style="color:#94a3b8;text-align:left;">
+                    <th style="padding-bottom:0.75rem;">Kullanıcı</th>
+                    <th style="padding-bottom:0.75rem;">Durum</th>
+                    <th style="padding-bottom:0.75rem;">Tarih</th>
+                    <th style="padding-bottom:0.75rem;">İşlemler</th>
                 </tr>
             </thead>
-            <tbody class="text-slate-200">
+            <tbody style="color:#e2e8f0;">
                 @forelse ($applications as $application)
-                    <tr class="border-t border-white/10">
-                        <td class="py-3">
-                            <div class="font-medium">{{ $application->user?->name ?? 'User #'.$application->user_id }}</div>
-                            <div class="text-xs text-slate-500">{{ $application->user?->email ?? '' }}</div>
+                    <tr style="border-top:1px solid rgba(255,255,255,0.1);">
+                        <td style="padding:0.75rem 0;">
+                            <div class="text-bold">{{ $application->user?->name ?? 'Kullanıcı #'.$application->user_id }}</div>
+                            <div class="text-muted" style="font-size:0.75rem;">{{ $application->user?->email ?? '' }}</div>
                         </td>
-                        <td class="py-3">{{ $application->status }}</td>
-                        <td class="py-3">{{ optional($application->created_at)->toDateTimeString() ?? '-' }}</td>
-                        <td class="py-3">
-                            <form method="POST" action="/admin/creator-applications/{{ $application->id }}/approve" class="inline-block">
+                        <td style="padding:0.75rem 0;">{{ $application->status }}</td>
+                        <td style="padding:0.75rem 0;">{{ optional($application->created_at)->toDateTimeString() ?? '-' }}</td>
+                        <td style="padding:0.75rem 0;">
+                            <form method="POST" action="/admin/creator-applications/{{ $application->id }}/approve" style="display:inline-block;">
                                 @csrf
-                                <button class="rounded-full bg-emerald-400 px-3 py-1 text-xs font-semibold text-slate-900">Approve</button>
+                                <button class="btn btn-primary" style="font-size:0.75rem;padding:0.25rem 0.75rem;">Onayla</button>
                             </form>
-                            <form method="POST" action="/admin/creator-applications/{{ $application->id }}/reject" class="inline-block ml-2">
+                            <form method="POST" action="/admin/creator-applications/{{ $application->id }}/reject" style="display:inline-block;margin-left:0.5rem;">
                                 @csrf
-                                <input type="hidden" name="rejection_reason" value="Incomplete application">
-                                <button class="rounded-full bg-rose-400 px-3 py-1 text-xs font-semibold text-slate-900">Reject</button>
+                                <input type="hidden" name="rejection_reason" value="Eksik başvuru">
+                                <button class="btn btn-outline" style="font-size:0.75rem;padding:0.25rem 0.75rem;border-color:rgba(244,63,94,0.3);color:#fda4af;">Reddet</button>
                             </form>
                         </td>
                     </tr>
                 @empty
                     <tr>
-                        <td class="py-4 text-slate-400" colspan="4">No pending applications.</td>
+                        <td style="padding:1rem 0;color:#94a3b8;" colspan="4">Bekleyen başvuru bulunmuyor.</td>
                     </tr>
                 @endforelse
             </tbody>

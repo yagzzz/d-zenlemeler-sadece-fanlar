@@ -667,8 +667,118 @@ async function setupNotificationsPage() {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   Global Click Delegation
+   Page: Profile — settings save, creator apply, account delete
    ═══════════════════════════════════════════════════════════════════════ */
+function setupProfilePage() {
+    const page = document.querySelector('[data-page="profile"]'); if (!page) return;
+
+    // Save settings
+    const saveBtn = document.getElementById('save-settings-btn');
+    if (saveBtn) {
+        saveBtn.addEventListener('click', async () => {
+            const name = document.getElementById('settings-name')?.value?.trim();
+            const username = document.getElementById('settings-username')?.value?.trim();
+            if (!name || !username) return showToast('İsim ve kullanıcı adı gerekli', 'error');
+            saveBtn.disabled = true;
+            saveBtn.textContent = 'Kaydediliyor…';
+            try {
+                const r = await fetchJson('/api/user/settings', { method: 'PUT', body: JSON.stringify({ name, username }) });
+                showToast('Ayarlar kaydedildi ✓', 'success');
+                // Update sidebar display
+                const sidebarName = document.querySelector('.user-details .text-bold');
+                if (sidebarName) sidebarName.textContent = r.user?.name || name;
+            } catch (err) {
+                showToast('Kayıt başarısız: ' + err.message, 'error');
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.textContent = 'Kaydet';
+            }
+        });
+    }
+
+    // Creator apply
+    const applyBtn = document.getElementById('creator-apply-btn');
+    if (applyBtn) {
+        applyBtn.addEventListener('click', async () => {
+            applyBtn.disabled = true;
+            applyBtn.textContent = 'Gönderiliyor…';
+            try {
+                await fetchJson('/creator/apply', { method: 'POST' });
+                showToast('Başvurun alındı! İnceleme sürecindeyiz.', 'success');
+                applyBtn.textContent = 'Başvuru Gönderildi ✓';
+            } catch (err) {
+                showToast('Başvuru gönderilemedi: ' + err.message, 'error');
+                applyBtn.disabled = false;
+                applyBtn.textContent = 'Başvur';
+            }
+        });
+    }
+
+    // Delete account
+    const deleteBtn = document.getElementById('delete-account-btn');
+    if (deleteBtn) {
+        deleteBtn.addEventListener('click', () => {
+            const password = prompt('Hesabını silmek için şifreni gir:');
+            if (!password) return;
+            if (!confirm('Bu işlem geri alınamaz. Hesabın kalıcı olarak silinecek. Emin misin?')) return;
+            fetchJson('/api/account', { method: 'DELETE', body: JSON.stringify({ current_password: password }) })
+                .then(() => { window.location.href = '/login'; })
+                .catch(err => showToast('Hesap silinemedi: ' + err.message, 'error'));
+        });
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Page: Explore — live search wiring
+   ═══════════════════════════════════════════════════════════════════════ */
+function setupExplorePage() {
+    const page = document.querySelector('[data-page="explore"]'); if (!page) return;
+    const searchInput = page.querySelector('.sf-input[placeholder*="ara"]');
+    if (!searchInput) return;
+
+    let debounce = null;
+    searchInput.addEventListener('input', () => {
+        clearTimeout(debounce);
+        debounce = setTimeout(async () => {
+            const q = searchInput.value.trim();
+            if (q.length < 2) return;
+            try {
+                const r = await fetchJson(`/explore?q=${encodeURIComponent(q)}`);
+                // Refresh creator list
+                const creatorsGrid = page.querySelector('[data-testid="explore-creators"]');
+                if (creatorsGrid && r.creators) {
+                    creatorsGrid.innerHTML = r.creators.length ? r.creators.map(c =>
+                        `<a href="/c/${escapeHtml(c.username)}" class="creator-card"><div class="d-flex align-items-center gap-3"><div class="creator-avatar">${escapeHtml((c.name||'?')[0].toUpperCase())}</div><div style="min-width:0;"><p class="text-bold" style="font-size:0.875rem;">${escapeHtml(c.name)}</p><p class="text-muted" style="font-size:0.75rem;">@${escapeHtml(c.username)}</p></div></div></a>`
+                    ).join('') : '<div class="empty-state"><p class="text-muted" style="font-size:0.875rem;">Sonuç bulunamadı.</p></div>';
+                }
+            } catch {}
+        }, 400);
+    });
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Notification Badge Polling
+   ═══════════════════════════════════════════════════════════════════════ */
+function startBadgePolling() {
+    async function updateBadge() {
+        try {
+            const r = await fetchJson('/api/notifications/unread-count');
+            const count = r.count || 0;
+            ['notif-badge-desktop', 'notif-badge-mobile'].forEach(id => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                if (count > 0) {
+                    el.textContent = count > 99 ? '99+' : String(count);
+                    el.classList.remove('d-none');
+                } else {
+                    el.classList.add('d-none');
+                }
+            });
+        } catch {}
+    }
+    updateBadge();
+    setInterval(updateBadge, 30000);
+}
 function setupGlobalActions() {
     document.body.addEventListener('click', async event => {
         const target = event.target.closest('[data-tier-id]');
@@ -731,10 +841,13 @@ document.addEventListener('DOMContentLoaded', () => {
         setupFeed();
         setupCreatorPage();
         setupCreatePage();
+        setupProfilePage();
+        setupExplorePage();
         setupBookmarksPage();
         setupNotificationsPage();
         setupGlobalActions();
         setupTipForm();
         setupCommentForm();
+        startBadgePolling();
     } catch (err) { console.error('[SF boot]', err); if (IS_LOCAL) debugToast(`Boot: ${err.message}`); }
 });

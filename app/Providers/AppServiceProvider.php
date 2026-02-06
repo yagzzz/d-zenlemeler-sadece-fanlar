@@ -13,6 +13,7 @@ use App\Services\Payments\MockPaymentSimulator;
 use App\Services\Payments\PaymentGateway;
 use App\Services\TierService;
 use App\Services\TipService;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -41,6 +42,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        Gate::policy(\App\Models\Content::class, \App\Policies\ContentPolicy::class);
+        Gate::policy(\App\Models\Comment::class, \App\Policies\CommentPolicy::class);
+        Gate::policy(\App\Models\Tier::class, \App\Policies\TierPolicy::class);
     }
 }

@@ -26,13 +26,6 @@
     <div class="mb-6">
         <h2 class="mb-3 text-bold" style="font-size:1rem;">Öne Çıkan Creator'lar</h2>
         <div style="display:grid;gap:0.75rem;grid-template-columns:repeat(1,1fr);" data-testid="explore-creators">
-            @php
-                $creators = \App\Models\User::where('role', 'creator')
-                    ->whereNotNull('creator_approved_at')
-                    ->with('creatorProfile')
-                    ->take(6)
-                    ->get();
-            @endphp
             @forelse ($creators as $creator)
                 <a href="/c/{{ $creator->username }}" class="creator-card">
                     <div class="d-flex align-items-center gap-3">
@@ -58,14 +51,6 @@
     <div>
         <h2 class="mb-3 text-bold" style="font-size:1rem;">Trend İçerikler</h2>
         <div style="display:grid;gap:0.75rem;" data-testid="explore-trending">
-            @php
-                $contents = \App\Models\Content::where('is_published', true)
-                    ->where('visibility', 'public')
-                    ->with('creator')
-                    ->latest('published_at')
-                    ->take(4)
-                    ->get();
-            @endphp
             @forelse ($contents as $content)
                 <div class="post-box p-4">
                     <div class="d-flex align-items-center gap-2 mb-2">

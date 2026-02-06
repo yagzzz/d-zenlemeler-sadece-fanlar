@@ -32,15 +32,18 @@ it('renders explore page', function () {
 });
 
 it('renders create page', function () {
-    $this->get('/create')->assertOk()->assertSee('İçerik Oluştur');
+    $user = User::factory()->create();
+    $this->actingAs($user)->get('/create')->assertOk()->assertSee('İçerik Oluştur');
 });
 
 it('renders inbox page', function () {
-    $this->get('/inbox')->assertOk()->assertSee('Mesajlar');
+    $user = User::factory()->create();
+    $this->actingAs($user)->get('/inbox')->assertOk()->assertSee('Mesajlar');
 });
 
 it('renders profile page', function () {
-    $this->get('/profile')->assertOk()->assertSee('Profil');
+    $user = User::factory()->create();
+    $this->actingAs($user)->get('/profile')->assertOk()->assertSee('Profil');
 });
 
 /* ── Feed empty state ────────────────────────────────────────────────── */

@@ -28,6 +28,7 @@
                 <div class="col-2 col-md-3 pt-4 p-0 d-none d-md-block">
                     <div class="side-menu px-1 px-md-2 px-lg-3">
                         {{-- User details --}}
+                        @auth
                         <div class="user-details mb-4 d-flex pointer-cursor flex-row">
                             <div class="ml-0 ml-md-2">
                                 <div class="user-avatar rounded-circle d-flex align-items-center justify-content-center">
@@ -43,6 +44,21 @@
                                 </div>
                             </div>
                         </div>
+                        @else
+                        <div class="user-details mb-4 d-flex pointer-cursor flex-row">
+                            <div class="ml-0 ml-md-2">
+                                <div class="user-avatar rounded-circle d-flex align-items-center justify-content-center">😎</div>
+                            </div>
+                            <div class="d-none d-lg-block overflow-hidden">
+                                <div class="pl-2 d-flex justify-content-center flex-column overflow-hidden">
+                                    <div class="ml-2 d-flex flex-column overflow-hidden">
+                                        <span class="text-bold text-truncate">Sadece Fanlar</span>
+                                        <span class="text-muted"><a href="/login" style="color:#d946ef;">Giriş Yap</a></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        @endauth
 
                         {{-- Navigation --}}
                         <ul class="nav flex-column user-side-menu">
@@ -118,7 +134,45 @@
                                     </div>
                                 </a>
                             </li>
+                            @auth
+                            <li class="nav-item mt-1">
+                                <form method="POST" action="/logout">
+                                    @csrf
+                                    <button type="submit" class="nav-link h-pill h-pill-primary d-flex justify-content-between w-100" style="background:none;border:none;cursor:pointer;">
+                                        <div class="d-flex justify-content-center align-items-center">
+                                            <div class="icon-wrapper d-flex justify-content-center align-items-center">
+                                                <svg class="icon-large" viewBox="0 0 512 512" fill="none" stroke="currentColor" stroke-width="32"><path d="M304 336v40a40 40 0 01-40 40H104a40 40 0 01-40-40V136a40 40 0 0140-40h152c22.09 0 48 17.91 48 40v40M368 336l80-80-80-80M176 256h256" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                            </div>
+                                            <span class="d-none d-lg-block ml-2 text-truncate side-menu-label">Çıkış Yap</span>
+                                        </div>
+                                    </button>
+                                </form>
+                            </li>
+                            @endauth
+                            @guest
+                            <li class="nav-item mt-1">
+                                <a href="/login" class="nav-link h-pill h-pill-primary d-flex justify-content-between">
+                                    <div class="d-flex justify-content-center align-items-center">
+                                        <div class="icon-wrapper d-flex justify-content-center align-items-center">
+                                            <svg class="icon-large" viewBox="0 0 512 512" fill="none" stroke="currentColor" stroke-width="32"><path d="M192 176v-40a40 40 0 0140-40h152a40 40 0 0140 40v240a40 40 0 01-40 40H240c-22.09 0-48-17.91-48-40v-40M96 256h256M304 176l80 80-80 80" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                        </div>
+                                        <span class="d-none d-lg-block ml-2 text-truncate side-menu-label">Giriş Yap</span>
+                                    </div>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="/register" class="nav-link h-pill h-pill-primary d-flex justify-content-between">
+                                    <div class="d-flex justify-content-center align-items-center">
+                                        <div class="icon-wrapper d-flex justify-content-center align-items-center">
+                                            <svg class="icon-large" viewBox="0 0 512 512" fill="none" stroke="currentColor" stroke-width="32"><path d="M376 144c-3.92 52.87-44 96-88 96s-84.15-43.12-88-96c-4-55 35-96 88-96s92 42 88 96z" stroke-linecap="round" stroke-linejoin="round"/><path d="M288 304c-87 0-175.3 48-191.64 138.6-1.97 10.9 4.21 21.4 15.65 21.4h352c11.44 0 17.62-10.48 15.65-21.4C463.3 352 375 304 288 304z" stroke-miterlimit="10"/><path d="M88 176v112M144 232H32" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                        </div>
+                                        <span class="d-none d-lg-block ml-2 text-truncate side-menu-label">Kayıt Ol</span>
+                                    </div>
+                                </a>
+                            </li>
+                            @endguest
                             {{-- New Post CTA --}}
+                            @auth
                             <li class="nav-item mt-3">
                                 <a role="button" class="btn btn-round btn-primary btn-block" href="/create">
                                     <span class="d-none d-lg-block text-truncate new-post-label">Yeni Gönderi</span>
@@ -127,6 +181,7 @@
                                     </span>
                                 </a>
                             </li>
+                            @endauth
                         </ul>
                     </div>
                 </div>
@@ -171,11 +226,11 @@
                                 </div>
                             </div>
                         </a>
-                        <a href="/profile" class="h-pill h-pill-primary nav-link d-flex justify-content-between px-3">
+                        <a href="{{ auth()->check() ? '/profile' : '/login' }}" class="h-pill h-pill-primary nav-link d-flex justify-content-between px-3">
                             <div class="d-flex justify-content-center align-items-center">
                                 <div class="icon-wrapper d-flex justify-content-center align-items-center">
                                     <div class="user-avatar rounded-circle w-32 d-flex align-items-center justify-content-center mobile-nav-avatar">
-                                        {{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}
+                                        @auth{{ strtoupper(substr(auth()->user()->name, 0, 1)) }}@else😎@endauth
                                     </div>
                                 </div>
                             </div>

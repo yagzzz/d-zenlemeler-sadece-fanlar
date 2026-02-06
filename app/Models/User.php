@@ -62,6 +62,16 @@ class User extends Authenticatable
         return $this->hasOne(CreatorProfile::class, 'user_id');
     }
 
+    public function contents(): HasMany
+    {
+        return $this->hasMany(Content::class, 'creator_id');
+    }
+
+    public function tiers(): HasMany
+    {
+        return $this->hasMany(Tier::class, 'creator_id');
+    }
+
     public function comments(): HasMany
     {
         return $this->hasMany(Comment::class);

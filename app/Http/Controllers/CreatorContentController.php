@@ -59,4 +59,15 @@ class CreatorContentController extends Controller
             'published_at' => optional($updated->published_at)->toISOString(),
         ]);
     }
+
+    public function destroy(Content $content, Request $request)
+    {
+        if ($content->creator_id !== $request->user()->id) {
+            abort(Response::HTTP_FORBIDDEN, 'Bu içeriği silme yetkiniz yok.');
+        }
+
+        $content->delete();
+
+        return response()->json(['deleted' => true]);
+    }
 }

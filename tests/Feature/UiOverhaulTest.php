@@ -98,21 +98,24 @@ it('explore page shows empty state when no creators', function () {
    ═══════════════════════════════════════════════════════════════════════ */
 
 it('create page has creator studio form', function () {
-    $this->get('/create')
+    $user = User::factory()->create();
+    $this->actingAs($user)->get('/create')
         ->assertOk()
         ->assertSee('creator-studio', false)
         ->assertSee('create-form', false);
 });
 
 it('create page has visibility selector', function () {
-    $this->get('/create')
+    $user = User::factory()->create();
+    $this->actingAs($user)->get('/create')
         ->assertOk()
         ->assertSee('visibility-btn', false)
         ->assertSee('upload-zone', false);
 });
 
 it('create page has visibility options', function () {
-    $this->get('/create')
+    $user = User::factory()->create();
+    $this->actingAs($user)->get('/create')
         ->assertOk()
         ->assertSee('Herkese Açık', false)
         ->assertSee('Aboneler');
@@ -123,7 +126,8 @@ it('create page has visibility options', function () {
    ═══════════════════════════════════════════════════════════════════════ */
 
 it('inbox page shows thread list', function () {
-    $this->get('/inbox')
+    $user = User::factory()->create();
+    $this->actingAs($user)->get('/inbox')
         ->assertOk()
         ->assertSee('inbox-threads', false)
         ->assertSee('Destek Ekibi');
