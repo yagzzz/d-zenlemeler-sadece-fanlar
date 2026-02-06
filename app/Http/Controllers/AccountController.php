@@ -2,43 +2,35 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Http\Requests\DeleteAccountRequest;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 
 class AccountController extends Controller
 {
-    public function destroy(Request $request)
+    public function destroy(DeleteAccountRequest $request)
     {
-        $request->validate([
-            'password' => ['required', 'current_password'],
-        ], [
-            'password.required' => 'Şifrenizi onaylayın.',
-            'password.current_password' => 'Şifre yanlış.',
-        ]);
-
         $user = $request->user();
 
-        DB::transaction(function () use ($user) {
-            // Remove social data
-            $user->comments()->delete();
-            $user->bookmarks()->delete();
-            $user->reactions()->delete();
-            $user->notifications()->delete();
-
-            // Remove content if creator
-            if ($user->isCreator()) {
-                $user->contents()->delete();
-                $user->creatorProfile()?->delete();
-                $user->tiers()->delete();
-            }
-
-            $user->delete();
-        });
-
+        // Logout BEFORE deleting — Auth::logout() cycles remember_token which
+        // would re-insert the user if called after delete() sets exists=false.
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
+
+        // Remove social data
+        $user->comments()->delete();
+        $user->bookmarks()->delete();
+        $user->reactions()->delete();
+        $user->notifications()->delete();
+
+        // Remove content if creator
+        if ($user->isCreator()) {
+            $user->contents()->delete();
+            $user->creatorProfile()?->delete();
+            $user->tiers()->delete();
+        }
+
+        $user->delete();
 
         return response()->json(['message' => 'Hesap silindi.', 'redirect' => '/login']);
     }

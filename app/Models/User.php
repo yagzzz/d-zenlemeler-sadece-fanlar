@@ -25,10 +25,20 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
+        'notification_preferences',
         'creator_applied_at',
         'creator_approved_at',
         'creator_rejected_at',
         'creator_rejection_reason',
+    ];
+
+    /**
+     * Default notification preferences for new users.
+     */
+    public const DEFAULT_NOTIFICATION_PREFERENCES = [
+        'new_subscription' => true,
+        'tip_notification' => true,
+        'new_message' => true,
     ];
 
     /**
@@ -51,10 +61,22 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'notification_preferences' => 'array',
             'creator_applied_at' => 'datetime',
             'creator_approved_at' => 'datetime',
             'creator_rejected_at' => 'datetime',
         ];
+    }
+
+    /**
+     * Get notification preferences with defaults merged in.
+     */
+    public function getNotificationPreferencesWithDefaults(): array
+    {
+        return array_merge(
+            self::DEFAULT_NOTIFICATION_PREFERENCES,
+            $this->notification_preferences ?? []
+        );
     }
 
     public function creatorProfile(): HasOne

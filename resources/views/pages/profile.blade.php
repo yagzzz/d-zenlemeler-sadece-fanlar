@@ -42,14 +42,26 @@
             <button id="save-settings-btn" class="btn btn-outline mt-3" style="font-size:0.75rem;">Kaydet</button>
         </div>
 
-        <div class="settings-card">
+        {{-- Notification Toggles --}}
+        @php
+            $prefs = auth()->user()->getNotificationPreferencesWithDefaults();
+            $toggles = [
+                'new_subscription' => 'Yeni abonelik',
+                'tip_notification' => 'Tip bildirimi',
+                'new_message' => 'Yeni mesaj',
+            ];
+        @endphp
+        <div class="settings-card" data-testid="notification-settings">
             <h3 class="text-bold mb-3" style="font-size:0.875rem;">Bildirimler</h3>
             <div style="display:flex;flex-direction:column;gap:0.75rem;">
-                @foreach (['Yeni abonelik', 'Tip bildirimi', 'Yeni mesaj'] as $notif)
+                @foreach ($toggles as $key => $label)
                     <label class="d-flex justify-content-between align-items-center pointer-cursor">
-                        <span style="font-size:0.875rem;color:#cbd5e1;">{{ $notif }}</span>
-                        <div style="position:relative;height:24px;width:44px;border-radius:9999px;background:rgba(255,255,255,0.1);">
-                            <div style="position:absolute;left:4px;top:4px;width:16px;height:16px;border-radius:50%;background:#d946ef;transition:transform 0.2s;"></div>
+                        <span style="font-size:0.875rem;color:#cbd5e1;">{{ $label }}</span>
+                        <div class="toggle-switch {{ ($prefs[$key] ?? true) ? 'active' : '' }}" data-pref-key="{{ $key }}">
+                            <input type="checkbox" class="toggle-input" {{ ($prefs[$key] ?? true) ? 'checked' : '' }} style="display:none;" />
+                            <div class="toggle-track">
+                                <div class="toggle-thumb"></div>
+                            </div>
                         </div>
                     </label>
                 @endforeach
@@ -69,6 +81,24 @@
             <p class="mt-2 text-muted" style="font-size:0.75rem;">Hesabını kalıcı olarak sil. Bu işlem geri alınamaz.</p>
             <button id="delete-account-btn" class="btn btn-outline mt-2" style="font-size:0.75rem;border-color:rgba(244,63,94,0.3);color:#fda4af;">Hesabı Sil</button>
         </div>
+    </div>
+</div>
+
+{{-- Delete Account Confirm Modal --}}
+<div id="delete-account-modal" class="modal-overlay hidden" data-testid="delete-modal">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content" style="max-width:400px;margin:auto;padding:2rem;border-radius:1rem;background:#1e1e2e;position:relative;z-index:10;">
+        <h3 class="text-bold mb-3" style="font-size:1rem;color:#fda4af;">Hesabı Sil</h3>
+        <p class="text-muted mb-3" style="font-size:0.875rem;">Bu işlem geri alınamaz. Tüm verileriniz kalıcı olarak silinecek.</p>
+        <div class="mb-3">
+            <label class="text-muted" style="font-size:0.75rem;">Onaylamak için şifrenizi girin:</label>
+            <input type="password" id="delete-confirm-password" class="sf-input mt-1" placeholder="Şifre" />
+        </div>
+        <div class="d-flex gap-2" style="gap:0.5rem;">
+            <button id="delete-confirm-btn" class="btn btn-outline" style="font-size:0.75rem;border-color:rgba(244,63,94,0.5);color:#fda4af;flex:1;">Evet, Sil</button>
+            <button id="delete-cancel-btn" class="btn btn-outline" style="font-size:0.75rem;flex:1;">İptal</button>
+        </div>
+        <p id="delete-error-msg" class="mt-2" style="font-size:0.75rem;color:#f87171;display:none;"></p>
     </div>
 </div>
 @endsection

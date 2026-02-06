@@ -1095,3 +1095,79 @@ a:hover { color: inherit; }
 
 /* ── Hidden utility ─────────────────────────────────────────────────── */
 .hidden { display: none !important; }
+
+/* ── Toggle Switch ──────────────────────────────────────────────────── */
+.toggle-switch {
+    cursor: pointer;
+    user-select: none;
+}
+.toggle-track {
+    position: relative;
+    height: 24px;
+    width: 44px;
+    border-radius: 9999px;
+    background: rgba(255,255,255,0.1);
+    transition: background 0.2s;
+}
+.toggle-switch.active .toggle-track {
+    background: #d946ef;
+}
+.toggle-thumb {
+    position: absolute;
+    left: 4px;
+    top: 4px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #fff;
+    transition: transform 0.2s;
+}
+.toggle-switch.active .toggle-thumb {
+    transform: translateX(20px);
+}
+
+/* ── More Menu Dropdown ─────────────────────────────────────────────── */
+.more-menu-dropdown {
+    position: absolute;
+    bottom: calc(100% + 0.5rem);
+    left: 0;
+    min-width: 220px;
+    background: #1e293b;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 0.75rem;
+    padding: 0.5rem 0;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    z-index: 100;
+}
+.more-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.625rem 1rem;
+    font-size: 0.875rem;
+    color: #cbd5e1;
+    transition: background 0.15s;
+}
+.more-menu-item:hover {
+    background: rgba(255,255,255,0.05);
+    color: #e2e8f0;
+}
+
+/* ── Modal Overlay ──────────────────────────────────────────────────── */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.modal-overlay .modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+}
+.modal-overlay .modal-content {
+    position: relative;
+    z-index: 10;
+}

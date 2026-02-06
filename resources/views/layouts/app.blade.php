@@ -124,8 +124,8 @@
                                     </div>
                                 </a>
                             </li>
-                            <li class="nav-item">
-                                <a href="#" class="nav-link h-pill h-pill-primary text-muted d-flex justify-content-between open-menu">
+                            <li class="nav-item" style="position:relative;">
+                                <a href="#" class="nav-link h-pill h-pill-primary text-muted d-flex justify-content-between open-menu" id="more-menu-toggle">
                                     <div class="d-flex justify-content-center align-items-center">
                                         <div class="icon-wrapper d-flex justify-content-center align-items-center">
                                             <svg class="icon-large" viewBox="0 0 512 512" fill="none" stroke="currentColor" stroke-width="32"><circle cx="256" cy="256" r="26"/><circle cx="346" cy="256" r="26"/><circle cx="166" cy="256" r="26"/></svg>
@@ -133,6 +133,32 @@
                                         <span class="d-none d-lg-block ml-2 text-truncate side-menu-label">Daha Fazla</span>
                                     </div>
                                 </a>
+                                {{-- Dropdown Menu --}}
+                                <div id="more-menu-dropdown" class="more-menu-dropdown hidden" data-testid="more-menu-dropdown">
+                                    <a href="/profile" class="more-menu-item">
+                                        <span>⚙️</span> <span>Ayarlar</span>
+                                    </a>
+                                    <a href="/billing" class="more-menu-item">
+                                        <span>💳</span> <span>Ödeme & Faturalama</span>
+                                    </a>
+                                    @auth
+                                    @if (auth()->user()?->role === 'user')
+                                    <a href="/profile#creator-apply" class="more-menu-item">
+                                        <span>🎨</span> <span>Creator Başvurusu</span>
+                                    </a>
+                                    @endif
+                                    @endauth
+                                    <a href="/help" class="more-menu-item">
+                                        <span>❓</span> <span>Yardım</span>
+                                    </a>
+                                    @auth
+                                    @if (auth()->user()?->isAdmin())
+                                    <a href="/admin/creator-applications" class="more-menu-item">
+                                        <span>🛡️</span> <span>Admin Panel</span>
+                                    </a>
+                                    @endif
+                                    @endauth
+                                </div>
                             </li>
                             @auth
                             <li class="nav-item mt-1">

@@ -87,8 +87,22 @@ Route::middleware('auth')->group(function () {
    User Settings & Account
    ══════════════════════════════════════════════════════════════════════ */
 Route::middleware('auth')->group(function () {
+    Route::patch('/settings/profile', [UserSettingsController::class, 'update'])->name('settings.profile');
+    Route::patch('/settings/preferences', [UserSettingsController::class, 'updatePreferences'])->name('settings.preferences');
+    Route::delete('/settings/account', [AccountController::class, 'destroy'])->name('settings.account.destroy');
+
+    // Keep legacy routes for backward compatibility
     Route::put('/api/user/settings', [UserSettingsController::class, 'update']);
     Route::delete('/api/account', [AccountController::class, 'destroy']);
+
+    // Placeholder pages
+    Route::get('/billing', function () {
+        return view('pages.billing');
+    })->name('billing');
+
+    Route::get('/help', function () {
+        return view('pages.help');
+    })->name('help');
 });
 
 Route::middleware(['auth', 'feature:creator_applications'])

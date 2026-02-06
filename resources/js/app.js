@@ -36,7 +36,18 @@ function showToast(message, type = 'info') {
 
 async function fetchJson(url, opts = {}) {
     const res = await fetch(url, { headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-CSRF-TOKEN': csrf || '', ...(opts.headers || {}) }, credentials: 'same-origin', ...opts });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    if (!res.ok) {
+        let errorMsg = `HTTP ${res.status}`;
+        try {
+            const body = await res.json();
+            if (body.errors) {
+                errorMsg = Object.values(body.errors).flat().join(' ');
+            } else if (body.message) {
+                errorMsg = body.message;
+            }
+        } catch {}
+        throw new Error(errorMsg);
+    }
     return res.json();
 }
 
@@ -672,7 +683,7 @@ async function setupNotificationsPage() {
 function setupProfilePage() {
     const page = document.querySelector('[data-page="profile"]'); if (!page) return;
 
-    // Save settings
+    // Save settings (PATCH to new route, fallback to PUT legacy)
     const saveBtn = document.getElementById('save-settings-btn');
     if (saveBtn) {
         saveBtn.addEventListener('click', async () => {
@@ -682,7 +693,7 @@ function setupProfilePage() {
             saveBtn.disabled = true;
             saveBtn.textContent = 'Kaydediliyor…';
             try {
-                const r = await fetchJson('/api/user/settings', { method: 'PUT', body: JSON.stringify({ name, username }) });
+                const r = await fetchJson('/settings/profile', { method: 'PATCH', body: JSON.stringify({ name, username }) });
                 showToast('Ayarlar kaydedildi ✓', 'success');
                 // Update sidebar display
                 const sidebarName = document.querySelector('.user-details .text-bold');
@@ -695,6 +706,26 @@ function setupProfilePage() {
             }
         });
     }
+
+    // Notification toggle switches
+    page.querySelectorAll('.toggle-switch[data-pref-key]').forEach(toggle => {
+        toggle.addEventListener('click', async () => {
+            const key = toggle.dataset.prefKey;
+            const checkbox = toggle.querySelector('.toggle-input');
+            const isNowActive = !toggle.classList.contains('active');
+            // Optimistic UI update
+            toggle.classList.toggle('active', isNowActive);
+            if (checkbox) checkbox.checked = isNowActive;
+            try {
+                await fetchJson('/settings/preferences', { method: 'PATCH', body: JSON.stringify({ [key]: isNowActive }) });
+            } catch (err) {
+                // Rollback on failure
+                toggle.classList.toggle('active', !isNowActive);
+                if (checkbox) checkbox.checked = !isNowActive;
+                showToast('Tercih kaydedilemedi: ' + err.message, 'error');
+            }
+        });
+    });
 
     // Creator apply
     const applyBtn = document.getElementById('creator-apply-btn');
@@ -714,17 +745,47 @@ function setupProfilePage() {
         });
     }
 
-    // Delete account
+    // Delete account — open modal instead of prompt()
     const deleteBtn = document.getElementById('delete-account-btn');
-    if (deleteBtn) {
+    const deleteModal = document.getElementById('delete-account-modal');
+    const deleteConfirmBtn = document.getElementById('delete-confirm-btn');
+    const deleteCancelBtn = document.getElementById('delete-cancel-btn');
+    const deletePasswordInput = document.getElementById('delete-confirm-password');
+    const deleteErrorMsg = document.getElementById('delete-error-msg');
+
+    if (deleteBtn && deleteModal) {
         deleteBtn.addEventListener('click', () => {
-            const password = prompt('Hesabını silmek için şifreni gir:');
-            if (!password) return;
-            if (!confirm('Bu işlem geri alınamaz. Hesabın kalıcı olarak silinecek. Emin misin?')) return;
-            fetchJson('/api/account', { method: 'DELETE', body: JSON.stringify({ current_password: password }) })
-                .then(() => { window.location.href = '/login'; })
-                .catch(err => showToast('Hesap silinemedi: ' + err.message, 'error'));
+            deleteModal.classList.remove('hidden');
+            if (deletePasswordInput) { deletePasswordInput.value = ''; deletePasswordInput.focus(); }
+            if (deleteErrorMsg) deleteErrorMsg.style.display = 'none';
         });
+
+        if (deleteCancelBtn) {
+            deleteCancelBtn.addEventListener('click', () => deleteModal.classList.add('hidden'));
+        }
+
+        // Close on backdrop click
+        deleteModal.querySelector('.modal-backdrop')?.addEventListener('click', () => deleteModal.classList.add('hidden'));
+
+        if (deleteConfirmBtn) {
+            deleteConfirmBtn.addEventListener('click', async () => {
+                const password = deletePasswordInput?.value;
+                if (!password) {
+                    if (deleteErrorMsg) { deleteErrorMsg.textContent = 'Şifre gerekli.'; deleteErrorMsg.style.display = 'block'; }
+                    return;
+                }
+                deleteConfirmBtn.disabled = true;
+                deleteConfirmBtn.textContent = 'Siliniyor…';
+                try {
+                    await fetchJson('/settings/account', { method: 'DELETE', body: JSON.stringify({ current_password: password }) });
+                    window.location.href = '/login';
+                } catch (err) {
+                    if (deleteErrorMsg) { deleteErrorMsg.textContent = err.message; deleteErrorMsg.style.display = 'block'; }
+                    deleteConfirmBtn.disabled = false;
+                    deleteConfirmBtn.textContent = 'Evet, Sil';
+                }
+            });
+        }
     }
 }
 
@@ -830,6 +891,32 @@ function setupCommentForm() {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
+   "Daha Fazla" Dropdown Menu
+   ═══════════════════════════════════════════════════════════════════════ */
+function setupMoreMenu() {
+    const toggle = document.getElementById('more-menu-toggle');
+    const dropdown = document.getElementById('more-menu-dropdown');
+    if (!toggle || !dropdown) return;
+
+    toggle.addEventListener('click', (e) => {
+        e.preventDefault();
+        dropdown.classList.toggle('hidden');
+    });
+
+    // Close on outside click
+    document.addEventListener('click', (e) => {
+        if (!toggle.contains(e.target) && !dropdown.contains(e.target)) {
+            dropdown.classList.add('hidden');
+        }
+    });
+
+    // Close on Escape
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') dropdown.classList.add('hidden');
+    });
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
    Boot
    ═══════════════════════════════════════════════════════════════════════ */
 document.addEventListener('DOMContentLoaded', () => {
@@ -848,6 +935,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setupGlobalActions();
         setupTipForm();
         setupCommentForm();
+        setupMoreMenu();
         startBadgePolling();
     } catch (err) { console.error('[SF boot]', err); if (IS_LOCAL) debugToast(`Boot: ${err.message}`); }
 });
